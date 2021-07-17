@@ -1,4 +1,4 @@
-#include "kinect_fusion.h"
+#include "system_interface.h"
 
 void initialize_voxel_grid(float* voxel_grid_x, float* voxel_grid_y, float* voxel_grid_z, 
 	                       int voxel_grid_x_start, int voxel_grid_y_start, int voxel_grid_z_start, 

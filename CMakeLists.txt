@@ -12,8 +12,8 @@ find_package(CUDA REQUIRED)
 if(CUDA_FOUND)
     message("Cuda version: " ${CUDA_VERSION})
     CUDA_ADD_EXECUTABLE(kinfu_imp
-    src/kinect_fusion_system.cpp
-    src/kinect_fusion.h
+    src/system_interface.cpp
+    src/system_interface.h
     src/data_initialization.cpp
     src/projective_tsdf.cu
     src/voxel_traversal.cu

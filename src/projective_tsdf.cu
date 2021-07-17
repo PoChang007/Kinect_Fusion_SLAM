@@ -1,4 +1,4 @@
-#include "kinect_fusion.h"
+#include "system_interface.h"
 
 # define WRK 1.0f
 

@@ -1,4 +1,4 @@
-#include "kinect_fusion.h"
+#include "system_interface.h"
 
 __global__ void cuda_calculate_3d_information(float *dev_vertices_z, float *dev_inv_cam_intrinsic,
 	                                          float *dev_vertices_x, float *dev_vertices_y,

@@ -1,4 +1,4 @@
-#include "kinect_fusion.h"
+#include "system_interface.h"
 
 __global__ void bilateral_filter(float* dev_depth_Image_array, float* dev_bilateral_output_array,
 	                             float* dev_spatial_kernel_array, float* dev_depth_Image_index_y, float* dev_depth_Image_index_x, 

@@ -1,4 +1,4 @@
-#include "kinect_fusion.h"
+#include "system_interface.h"
 #include "cuda_functions.cuh"
 
 __device__ float ray_box_intersection(bool& flag, float3& ray_direction, float3& voxel_volume_min, float3& voxel_volume_max,

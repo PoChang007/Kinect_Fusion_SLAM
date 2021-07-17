@@ -1,4 +1,4 @@
-#include "kinect_fusion.h"
+#include "system_interface.h"
 #include "cuda_functions.cuh"
 
 # define SIZE_6 6
