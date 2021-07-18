@@ -1,16 +1,17 @@
-#include "system_interface.h"
+#include "kinfu_pipeline.h"
 
-# define WRK 1.0f
+#define WRK 1.0f
 
 __global__ void projective_tsdf(float *dev_cam_intrinsic, float *dev_global_extrinsic,
-                                float *dev_inv_cam_intrinsic, float *dev_inv_global_extrinsic, float *dev_vertices_z, 
-                                float *dev_voxel_grid_x, float *dev_voxel_grid_y, float *dev_voxel_grid_z, 
+                                float *dev_inv_cam_intrinsic, float *dev_inv_global_extrinsic, float *dev_vertices_z,
+                                float *dev_voxel_grid_x, float *dev_voxel_grid_y, float *dev_voxel_grid_z,
                                 float *dev_global_tsdf, float *dev_global_weight_tsdf,
                                 float truncated_distance, float sdf_minimum, float sdf_maximum, bool initial_tsdf_construct,
                                 float voxel_length, float voxel_width, float voxel_height)
 {
     const int x = blockDim.x * blockIdx.x + threadIdx.x;
-    if (x >= voxel_length * voxel_width * voxel_height) return;
+    if (x >= voxel_length * voxel_width * voxel_height)
+        return;
 
     // each voxel's mid position
     float3 voxel_mid = make_float3(dev_voxel_grid_x[x], dev_voxel_grid_y[x], dev_voxel_grid_z[x]);
@@ -45,10 +46,10 @@ __global__ void projective_tsdf(float *dev_cam_intrinsic, float *dev_global_extr
                 // signed distance function calculation. First, translation from global coordinate
                 float3 translation_diff = make_float3(dev_global_extrinsic[3] - voxel_mid.x, dev_global_extrinsic[7] - voxel_mid.y, dev_global_extrinsic[11] - voxel_mid.z);
                 // L2 norm operation
-                float translation_magnitude = sqrtf(translation_diff.x* translation_diff.x + translation_diff.y * translation_diff.y + translation_diff.z * translation_diff.z);
+                float translation_magnitude = sqrtf(translation_diff.x * translation_diff.x + translation_diff.y * translation_diff.y + translation_diff.z * translation_diff.z);
                 // signed distance value
                 float frk = dev_vertices_z[(local_projected_pixel_v - 1) * WIDTH + (local_projected_pixel_u - 1)] - (1.f / lambda) * translation_magnitude;
-                                
+
                 // truncated Signed Distance function operation
                 if (initial_tsdf_construct == true)
                 {
@@ -67,10 +68,10 @@ __global__ void projective_tsdf(float *dev_cam_intrinsic, float *dev_global_extr
                 {
                     if (frk > 0 && frk < sdf_maximum)
                     {
-						if (isnan(dev_global_tsdf[x]))
-							dev_global_tsdf[x] = 0.0f;
-						if (isnan(dev_global_weight_tsdf[x]))
-							dev_global_weight_tsdf[x] = 0.0f;
+                        if (isnan(dev_global_tsdf[x]))
+                            dev_global_tsdf[x] = 0.0f;
+                        if (isnan(dev_global_weight_tsdf[x]))
+                            dev_global_weight_tsdf[x] = 0.0f;
 
                         frk = fminf(1.f, (frk / truncated_distance));
                         dev_global_tsdf[x] = (dev_global_weight_tsdf[x] * dev_global_tsdf[x] + WRK * frk) / (dev_global_weight_tsdf[x] + WRK);
@@ -94,8 +95,8 @@ __global__ void projective_tsdf(float *dev_cam_intrinsic, float *dev_global_extr
 }
 
 extern "C" void projective_tsdf(float *voxel_grid_x, float *voxel_grid_y, float *voxel_grid_z,
-                                Mat &cam_intrinsic_cv, Mat &global_extrinsic_cv, float *global_tsdf, float *global_weight_tsdf,
-                                Mat &vertices_z_cv, float truncated_distance, float sdf_minimum, float sdf_maximum, 
+                                cv::Mat &cam_intrinsic_cv, cv::Mat &global_extrinsic_cv, float *global_tsdf, float *global_weight_tsdf,
+                                cv::Mat &vertices_z_cv, float truncated_distance, float sdf_minimum, float sdf_maximum,
                                 int voxel_length, int voxel_width, int voxel_height, bool initial_tsdf_construct)
 {
     cv::Mat inv_camera_intrinsic_m = cam_intrinsic_cv.inv();
@@ -103,29 +104,25 @@ extern "C" void projective_tsdf(float *voxel_grid_x, float *voxel_grid_y, float 
 
     // gpu data allocation
     float *dev_vertices_z = 0;
-    float *dev_voxel_grid_x = 0;
-    float *dev_voxel_grid_y = 0;
-    float *dev_voxel_grid_z = 0;
+    float *dev_voxel_grid_x = 0, *dev_voxel_grid_y = 0, *dev_voxel_grid_z = 0;
     float *dev_global_tsdf = 0;
     float *dev_global_weight_tsdf = 0;
 
-    float *dev_cam_intrinsic = 0;
-    float *dev_global_extrinsic = 0;
-    float *dev_inv_cam_intrinsic = 0;
-    float *dev_inv_global_extrinsic = 0;
+    float *dev_cam_intrinsic = 0, *dev_inv_cam_intrinsic = 0;
+    float *dev_global_extrinsic = 0, *dev_inv_global_extrinsic = 0;
 
     // allocate gpu buffers for data
-    cudaMalloc((void**)&dev_vertices_z, WIDTH * HEIGHT * sizeof(float));
-    cudaMalloc((void**)&dev_voxel_grid_x, voxel_length * voxel_width * voxel_height * sizeof(float));
-    cudaMalloc((void**)&dev_voxel_grid_y, voxel_length * voxel_width * voxel_height * sizeof(float));
-    cudaMalloc((void**)&dev_voxel_grid_z, voxel_length * voxel_width * voxel_height * sizeof(float));
-    cudaMalloc((void**)&dev_global_tsdf, voxel_length * voxel_width * voxel_height * sizeof(float));
-    cudaMalloc((void**)&dev_global_weight_tsdf, voxel_length * voxel_width * voxel_height * sizeof(float));
+    cudaMalloc((void **)&dev_vertices_z, WIDTH * HEIGHT * sizeof(float));
+    cudaMalloc((void **)&dev_voxel_grid_x, voxel_length * voxel_width * voxel_height * sizeof(float));
+    cudaMalloc((void **)&dev_voxel_grid_y, voxel_length * voxel_width * voxel_height * sizeof(float));
+    cudaMalloc((void **)&dev_voxel_grid_z, voxel_length * voxel_width * voxel_height * sizeof(float));
+    cudaMalloc((void **)&dev_global_tsdf, voxel_length * voxel_width * voxel_height * sizeof(float));
+    cudaMalloc((void **)&dev_global_weight_tsdf, voxel_length * voxel_width * voxel_height * sizeof(float));
 
-    cudaMalloc((void**)&dev_cam_intrinsic, INTRINSIC_ELEMENTS * sizeof(float));
-    cudaMalloc((void**)&dev_global_extrinsic, EXTRINSIC_ELEMENTS * sizeof(float));
-    cudaMalloc((void**)&dev_inv_cam_intrinsic, INTRINSIC_ELEMENTS * sizeof(float));
-    cudaMalloc((void**)&dev_inv_global_extrinsic, EXTRINSIC_ELEMENTS * sizeof(float));
+    cudaMalloc((void **)&dev_cam_intrinsic, INTRINSIC_ELEMENTS * sizeof(float));
+    cudaMalloc((void **)&dev_global_extrinsic, EXTRINSIC_ELEMENTS * sizeof(float));
+    cudaMalloc((void **)&dev_inv_cam_intrinsic, INTRINSIC_ELEMENTS * sizeof(float));
+    cudaMalloc((void **)&dev_inv_global_extrinsic, EXTRINSIC_ELEMENTS * sizeof(float));
 
     // copy input from host memory to GPU buffers.
     cudaMemcpy(dev_vertices_z, vertices_z_cv.data, WIDTH * HEIGHT * sizeof(float), cudaMemcpyHostToDevice);
@@ -143,9 +140,9 @@ extern "C" void projective_tsdf(float *voxel_grid_x, float *voxel_grid_y, float 
     int threads_per_block = 64;
     int blocks_per_grid = (voxel_length * voxel_width * voxel_height + threads_per_block - 1) / threads_per_block;
 
-    projective_tsdf<<<blocks_per_grid, threads_per_block>>>(dev_cam_intrinsic, dev_global_extrinsic, 
-                                                            dev_inv_cam_intrinsic, dev_inv_global_extrinsic, dev_vertices_z, 
-                                                            dev_voxel_grid_x, dev_voxel_grid_y, dev_voxel_grid_z, 
+    projective_tsdf<<<blocks_per_grid, threads_per_block>>>(dev_cam_intrinsic, dev_global_extrinsic,
+                                                            dev_inv_cam_intrinsic, dev_inv_global_extrinsic, dev_vertices_z,
+                                                            dev_voxel_grid_x, dev_voxel_grid_y, dev_voxel_grid_z,
                                                             dev_global_tsdf, dev_global_weight_tsdf,
                                                             truncated_distance, sdf_minimum, sdf_maximum, initial_tsdf_construct,
                                                             voxel_length, voxel_width, voxel_height);
