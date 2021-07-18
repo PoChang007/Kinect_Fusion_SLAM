@@ -16,8 +16,8 @@ namespace Kinfu
 
         depth_data = std::make_unique<DepthImage3dData>();
         depth_data->depth_image_next = cv::Mat::zeros(HEIGHT, WIDTH, CV_16UC1);
-        depth_data->raw_vectirces_x = cv::Mat::zeros(HEIGHT, WIDTH, CV_32F);
-        depth_data->raw_vectirces_y = cv::Mat::zeros(HEIGHT, WIDTH, CV_32F);
+        depth_data->raw_vertices_x = cv::Mat::zeros(HEIGHT, WIDTH, CV_32F);
+        depth_data->raw_vertices_y = cv::Mat::zeros(HEIGHT, WIDTH, CV_32F);
         depth_data->raw_normal_x = cv::Mat::zeros(HEIGHT, WIDTH, CV_32F);
         depth_data->raw_normal_y = cv::Mat::zeros(HEIGHT, WIDTH, CV_32F);
         depth_data->raw_normal_z = cv::Mat::zeros(HEIGHT, WIDTH, CV_32F);
@@ -27,7 +27,6 @@ namespace Kinfu
 
     SystemUtility::~SystemUtility()
     {
-        std::cout << "Data destroy" << std::endl;
         ray_casting_data->surface_prediction_x.release();
         ray_casting_data->surface_prediction_y.release();
         ray_casting_data->surface_prediction_z.release();
@@ -37,8 +36,8 @@ namespace Kinfu
         ray_casting_data->traversal_recording.release();
 
         depth_data->depth_image_next.release();
-        depth_data->raw_vectirces_x.release();
-        depth_data->raw_vectirces_y.release();
+        depth_data->raw_vertices_x.release();
+        depth_data->raw_vertices_y.release();
         depth_data->raw_normal_x.release();
         depth_data->raw_normal_y.release();
         depth_data->raw_normal_z.release();

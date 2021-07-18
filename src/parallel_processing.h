@@ -33,12 +33,12 @@ extern "C" void Ray_Casting(cv::Mat &surface_prediction_x, cv::Mat &surface_pred
                             int voxel_grid_x_start, int voxel_grid_y_start, int voxel_grid_z_start, float voxel_distance);
 
 extern "C" void Calculate_Vertices_And_Normals(cv::Mat &depth_image_next, cv::Mat &intrinsic_matrix,
-                                               cv::Mat &raw_vectirces_x, cv::Mat &raw_vectirces_y,
+                                               cv::Mat &raw_vertices_x, cv::Mat &raw_vertices_y,
                                                cv::Mat &raw_normal_x, cv::Mat &raw_normal_y, cv::Mat &raw_normal_z,
                                                cv::Mat &vertex_mask, float *depth_Image_index_y, float *depth_Image_index_x);
 
 extern "C" void Estimate_Sensor_Pose(cv::Mat &intrinsic_matrix, cv::Mat &extrinsic_matrix,
-                                     cv::Mat &raw_vectirces_x, cv::Mat &raw_vectirces_y, cv::Mat &depth_image_next,
+                                     cv::Mat &raw_vertices_x, cv::Mat &raw_vertices_y, cv::Mat &depth_image_next,
                                      cv::Mat &raw_normal_x, cv::Mat &raw_normal_y, cv::Mat &raw_normal_z,
                                      cv::Mat &surface_prediction_x, cv::Mat &surface_prediction_y, cv::Mat &surface_prediction_z,
                                      cv::Mat &surface_prediction_normal_x, cv::Mat &surface_prediction_normal_y, cv::Mat &surface_prediction_normal_z,

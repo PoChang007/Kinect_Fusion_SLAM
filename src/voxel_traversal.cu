@@ -1,7 +1,7 @@
 #include "kinfu_pipeline.h"
 #include "cuda_functions.cuh"
 
-__device__ float ray_box_intersection(bool &flag, float3 &ray_direction, float3 &voxel_volume_min, float3 &voxel_volume_max,
+__device__ float Ray_Box_Intersection(bool &flag, float3 &ray_direction, float3 &voxel_volume_min, float3 &voxel_volume_max,
                                       float &ray_skipping_global_x, float &ray_skipping_global_y, float &ray_skipping_global_z)
 {
     float tmin, tmax, tymin, tymax, tzmin, tzmax;
@@ -72,7 +72,7 @@ __device__ float ray_box_intersection(bool &flag, float3 &ray_direction, float3 
     return tmin;
 }
 
-__global__ void voxel_traversal(float *dev_surface_points_x, float *dev_surface_points_y, float *dev_surface_points_z,
+__global__ void Voxel_Traversal(float *dev_surface_points_x, float *dev_surface_points_y, float *dev_surface_points_z,
                                 float *dev_surface_normals_x, float *dev_surface_normals_y, float *dev_surface_normals_z,
                                 float *dev_depth_image_coord_x, float *dev_depth_image_coord_y,
                                 float *dev_cam_intrinsic, float *dev_global_extrinsic,
@@ -110,11 +110,11 @@ __global__ void voxel_traversal(float *dev_surface_points_x, float *dev_surface_
         float ray_lambda_global_z = dev_global_extrinsic[8] * lambda_vector.x + dev_global_extrinsic[9] * lambda_vector.y + dev_global_extrinsic[10] * lambda_vector.z + dev_global_extrinsic[11] * 1.f;
 
         float3 ray_direction = make_float3((ray_lambda_global_x - camera_position.x), (ray_lambda_global_y - camera_position.y), (ray_lambda_global_z - camera_position.z));
-        get_normalized(ray_direction);
+        Get_Normalized(ray_direction);
 
         // ray box intersection test
         bool flag = false;
-        float tmin = ray_box_intersection(flag, ray_direction, voxel_volume_min, voxel_volume_max,
+        float tmin = Ray_Box_Intersection(flag, ray_direction, voxel_volume_min, voxel_volume_max,
                                           ray_skipping_global_x, ray_skipping_global_y, ray_skipping_global_z);
 
         if (flag == true)
@@ -353,9 +353,9 @@ __global__ void voxel_traversal(float *dev_surface_points_x, float *dev_surface_
 
                     //check the normal vector to make sure pointing outward
                     float3 vector_a = make_float3((camera_position.x - surface_prediction.x), (camera_position.y - surface_prediction.y), (camera_position.z - surface_prediction.z));
-                    get_normalized(vector_a);
+                    Get_Normalized(vector_a);
                     float3 vector_b = make_float3(surface_normal_prediction.x, surface_normal_prediction.y, surface_normal_prediction.z);
-                    get_normalized(vector_b);
+                    Get_Normalized(vector_b);
 
                     double cos_theta = vector_a.x * vector_b.x + vector_a.y * vector_b.y + vector_a.z * vector_b.z;
                     double angle = acos(cos_theta) * (180.0f / CUDART_PI_F);
@@ -499,7 +499,7 @@ extern "C" void Ray_Casting(cv::Mat &surface_points_x_cv, cv::Mat &surface_point
     int threads_per_block = 64;
     int blocks_per_grid = (WIDTH * HEIGHT + threads_per_block - 1) / threads_per_block;
 
-    voxel_traversal<<<blocks_per_grid, threads_per_block>>>(dev_surface_points_x, dev_surface_points_y, dev_surface_points_z,
+    Voxel_Traversal<<<blocks_per_grid, threads_per_block>>>(dev_surface_points_x, dev_surface_points_y, dev_surface_points_z,
                                                             dev_surface_normals_x, dev_surface_normals_y, dev_surface_normals_z,
                                                             dev_depth_image_coord_x, dev_depth_image_coord_y,
                                                             dev_cam_intrinsic, dev_global_extrinsic,

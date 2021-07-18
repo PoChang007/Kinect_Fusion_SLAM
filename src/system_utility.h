@@ -33,8 +33,8 @@ namespace Kinfu
         struct DepthImage3dData
         {
             cv::Mat depth_image_next;
-            cv::Mat raw_vectirces_x;
-            cv::Mat raw_vectirces_y;
+            cv::Mat raw_vertices_x;
+            cv::Mat raw_vertices_y;
             cv::Mat raw_normal_x;
             cv::Mat raw_normal_y;
             cv::Mat raw_normal_z;

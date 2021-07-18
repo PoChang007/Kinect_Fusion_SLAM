@@ -71,10 +71,12 @@ namespace Kinfu
 
     KinfuPipeline::~KinfuPipeline()
     {
-        std::cout << "destroy data" << std::endl;
         intrinsic_matrix.release();
         extrinsic_matrix.release();
         _initial_depth_image.release();
+        _spatial_kernel_y.release();
+        _spatial_kernel_x.release();
+        _weight_d.release();
 
         delete[] depth_Image_index_y;
         delete[] depth_Image_index_x;
@@ -108,19 +110,8 @@ namespace Kinfu
                     _voxel_length, _voxel_width, _voxel_height,
                     _voxel_grid_x_start, _voxel_grid_y_start, _voxel_grid_z_start, _voxel_distance);
 
-        // spatial Kernel
-        cv::Mat spatial_kernel_y;
-        cv::Mat spatial_kernel_x;
-
-        // filter window
-        const int bw_radius = 3;
-        _system_utility->CreateSpatialKernel(cv::Range(-bw_radius, bw_radius), cv::Range(-bw_radius, bw_radius), spatial_kernel_y, spatial_kernel_x);
-
-        // computing Gaussian distance weight
-        const float sigma_d = 4.5f;
-        const float sigma_r = 30.f;
-        cv::Mat weight_d;
-        _system_utility->GaussianDistanceWeight(spatial_kernel_y, spatial_kernel_x, weight_d, sigma_d);
+        _system_utility->CreateSpatialKernel(cv::Range(-_bw_radius, _bw_radius), cv::Range(-_bw_radius, _bw_radius), _spatial_kernel_y, _spatial_kernel_x);
+        _system_utility->GaussianDistanceWeight(_spatial_kernel_y, _spatial_kernel_x, _weight_d, _sigma_d);
 
         // loop process
         // calculate vertices and normals in the next frame
@@ -130,8 +121,8 @@ namespace Kinfu
 
             _system_utility->depth_data->depth_image_next.convertTo(_system_utility->depth_data->depth_image_next, CV_16UC1);
             _system_utility->depth_data->depth_image_next = cv::Mat::zeros(HEIGHT, WIDTH, CV_16UC1);
-            _system_utility->depth_data->raw_vectirces_x = cv::Mat::zeros(HEIGHT, WIDTH, CV_32F);
-            _system_utility->depth_data->raw_vectirces_y = cv::Mat::zeros(HEIGHT, WIDTH, CV_32F);
+            _system_utility->depth_data->raw_vertices_x = cv::Mat::zeros(HEIGHT, WIDTH, CV_32F);
+            _system_utility->depth_data->raw_vertices_y = cv::Mat::zeros(HEIGHT, WIDTH, CV_32F);
             _system_utility->depth_data->raw_normal_x = cv::Mat::zeros(HEIGHT, WIDTH, CV_32F);
             _system_utility->depth_data->raw_normal_y = cv::Mat::zeros(HEIGHT, WIDTH, CV_32F);
             _system_utility->depth_data->raw_normal_z = cv::Mat::zeros(HEIGHT, WIDTH, CV_32F);
@@ -141,21 +132,22 @@ namespace Kinfu
             _system_utility->LoadDepthData(_system_utility->depth_data->depth_image_next, i);
             _system_utility->GetRangeDepth(_system_utility->depth_data->depth_image_next);
             Calculate_Vertices_And_Normals(_system_utility->depth_data->depth_image_next, intrinsic_matrix,
-                                           _system_utility->depth_data->raw_vectirces_x,
-                                           _system_utility->depth_data->raw_vectirces_y,
+                                           _system_utility->depth_data->raw_vertices_x,
+                                           _system_utility->depth_data->raw_vertices_y,
                                            _system_utility->depth_data->raw_normal_x,
                                            _system_utility->depth_data->raw_normal_y,
                                            _system_utility->depth_data->raw_normal_z,
                                            _system_utility->depth_data->vertex_mask,
                                            depth_Image_index_y, depth_Image_index_x);
 
-            // Bilateral_Filtering(depth_image_next, bilateral_output, weight_d,
-            // 	                depth_Image_index_y, depth_Image_index_x,
-            // 	                bw_radius, sigma_r);
+            // Bilateral_Filtering(_system_utility->depth_data->depth_image_next, 
+            //                     _system_utility->depth_data->bilateral_output, 
+            //                     _weight_d, depth_Image_index_y, depth_Image_index_x,
+            // 	                _bw_radius, _sigma_r);
 
             Estimate_Sensor_Pose(intrinsic_matrix, extrinsic_matrix,
-                                 _system_utility->depth_data->raw_vectirces_x,
-                                 _system_utility->depth_data->raw_vectirces_y,
+                                 _system_utility->depth_data->raw_vertices_x,
+                                 _system_utility->depth_data->raw_vertices_y,
                                  _system_utility->depth_data->depth_image_next,
                                  _system_utility->depth_data->raw_normal_x,
                                  _system_utility->depth_data->raw_normal_y,

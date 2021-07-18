@@ -53,7 +53,20 @@ namespace Kinfu
         const float _sdf_maximum{300.f};
         const float _sdf_minimum{-30.f};
 
+        // filter window
+        const int _bw_radius{3};
+
+        // computing Gaussian distance weight
+        const float _sigma_d{4.5f};
+        const float _sigma_r{30.f};
+
         cv::Mat _initial_depth_image;
+
+        // spatial Kernel
+        cv::Mat _spatial_kernel_y;
+        cv::Mat _spatial_kernel_x;
+        cv::Mat _weight_d;
+
         std::unique_ptr<SystemUtility> _system_utility;
     };
 }

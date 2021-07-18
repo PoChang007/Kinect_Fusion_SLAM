@@ -1,6 +1,6 @@
 #include "kinfu_pipeline.h"
 
-__global__ void cuda_calculate_3d_information(float *dev_vertices_z, float *dev_inv_cam_intrinsic,
+__global__ void Calculate_Vertices_And_Normals(float *dev_vertices_z, float *dev_inv_cam_intrinsic,
 											  float *dev_vertices_x, float *dev_vertices_y,
 											  float *dev_normals_x, float *dev_normals_y, float *dev_normals_z,
 											  uint8_t *dev_vertex_mask, float *dev_depth_image_coord_y, float *dev_depth_image_coord_x)
@@ -21,27 +21,27 @@ __global__ void cuda_calculate_3d_information(float *dev_vertices_z, float *dev_
 
 		if (next_row > 0 && next_col > 0 && dev_vertices_z[next_row] != 0 && dev_vertices_z[next_col] != 0)
 		{
-			float raw_vectirces_x = dev_vertices_z[x] * (dev_inv_cam_intrinsic[0] * (float)(current_x + 1) + dev_inv_cam_intrinsic[1] * (float)(current_y + 1) + dev_inv_cam_intrinsic[2]);
-			float raw_vectirces_y = dev_vertices_z[x] * (dev_inv_cam_intrinsic[3] * (float)(current_x + 1) + dev_inv_cam_intrinsic[4] * (float)(current_y + 1) + dev_inv_cam_intrinsic[5]);
-			float raw_vectirces_x_next_row = dev_vertices_z[next_row] * (dev_inv_cam_intrinsic[0] * (float)(current_x + 1) + dev_inv_cam_intrinsic[1] * (float)(current_y + 2) + dev_inv_cam_intrinsic[2]);
-			float raw_vectirces_x_next_col = dev_vertices_z[next_col] * (dev_inv_cam_intrinsic[0] * (float)(current_x + 2) + dev_inv_cam_intrinsic[1] * (float)(current_y + 1) + dev_inv_cam_intrinsic[2]);
-			float raw_vectirces_y_next_row = dev_vertices_z[next_row] * (dev_inv_cam_intrinsic[3] * (float)(current_x + 1) + dev_inv_cam_intrinsic[4] * (float)(current_y + 2) + dev_inv_cam_intrinsic[5]);
-			float raw_vectirces_y_next_col = dev_vertices_z[next_col] * (dev_inv_cam_intrinsic[3] * (float)(current_x + 2) + dev_inv_cam_intrinsic[4] * (float)(current_y + 1) + dev_inv_cam_intrinsic[5]);
+			float raw_vertices_x = dev_vertices_z[x] * (dev_inv_cam_intrinsic[0] * (float)(current_x + 1) + dev_inv_cam_intrinsic[1] * (float)(current_y + 1) + dev_inv_cam_intrinsic[2]);
+			float raw_vertices_y = dev_vertices_z[x] * (dev_inv_cam_intrinsic[3] * (float)(current_x + 1) + dev_inv_cam_intrinsic[4] * (float)(current_y + 1) + dev_inv_cam_intrinsic[5]);
+			float raw_vertices_x_next_row = dev_vertices_z[next_row] * (dev_inv_cam_intrinsic[0] * (float)(current_x + 1) + dev_inv_cam_intrinsic[1] * (float)(current_y + 2) + dev_inv_cam_intrinsic[2]);
+			float raw_vertices_x_next_col = dev_vertices_z[next_col] * (dev_inv_cam_intrinsic[0] * (float)(current_x + 2) + dev_inv_cam_intrinsic[1] * (float)(current_y + 1) + dev_inv_cam_intrinsic[2]);
+			float raw_vertices_y_next_row = dev_vertices_z[next_row] * (dev_inv_cam_intrinsic[3] * (float)(current_x + 1) + dev_inv_cam_intrinsic[4] * (float)(current_y + 2) + dev_inv_cam_intrinsic[5]);
+			float raw_vertices_y_next_col = dev_vertices_z[next_col] * (dev_inv_cam_intrinsic[3] * (float)(current_x + 2) + dev_inv_cam_intrinsic[4] * (float)(current_y + 1) + dev_inv_cam_intrinsic[5]);
 
 			//cross prodcut
-			float nI = (raw_vectirces_y_next_row - raw_vectirces_y) * (dev_vertices_z[next_col] - dev_vertices_z[x]) -
-					   (dev_vertices_z[next_row] - dev_vertices_z[x]) * (raw_vectirces_y_next_col - raw_vectirces_y);
-			float nJ = (dev_vertices_z[next_row] - dev_vertices_z[x]) * (raw_vectirces_x_next_col - raw_vectirces_x) -
-					   (raw_vectirces_x_next_row - raw_vectirces_x) * (dev_vertices_z[next_col] - dev_vertices_z[x]);
-			float nK = (raw_vectirces_x_next_row - raw_vectirces_x) * (raw_vectirces_y_next_col - raw_vectirces_y) -
-					   (raw_vectirces_y_next_row - raw_vectirces_y) * (raw_vectirces_x_next_col - raw_vectirces_x);
+			float nI = (raw_vertices_y_next_row - raw_vertices_y) * (dev_vertices_z[next_col] - dev_vertices_z[x]) -
+					   (dev_vertices_z[next_row] - dev_vertices_z[x]) * (raw_vertices_y_next_col - raw_vertices_y);
+			float nJ = (dev_vertices_z[next_row] - dev_vertices_z[x]) * (raw_vertices_x_next_col - raw_vertices_x) -
+					   (raw_vertices_x_next_row - raw_vertices_x) * (dev_vertices_z[next_col] - dev_vertices_z[x]);
+			float nK = (raw_vertices_x_next_row - raw_vertices_x) * (raw_vertices_y_next_col - raw_vertices_y) -
+					   (raw_vertices_y_next_row - raw_vertices_y) * (raw_vertices_x_next_col - raw_vertices_x);
 
 			float u_nI = nI / sqrtf(nI * nI + nJ * nJ + nK * nK);
 			float u_nJ = nJ / sqrtf(nI * nI + nJ * nJ + nK * nK);
 			float u_nK = nK / sqrtf(nI * nI + nJ * nJ + nK * nK);
 
-			dev_vertices_x[x] = raw_vectirces_x;
-			dev_vertices_y[x] = raw_vectirces_y;
+			dev_vertices_x[x] = raw_vertices_x;
+			dev_vertices_y[x] = raw_vertices_y;
 			dev_normals_x[x] = u_nI;
 			dev_normals_y[x] = u_nJ;
 			dev_normals_z[x] = u_nK;
@@ -94,7 +94,7 @@ extern "C" void Calculate_Vertices_And_Normals(cv::Mat &vertices_z_cv, cv::Mat &
 	int threads_per_block = 64;
 	int blocks_per_grid = (WIDTH * HEIGHT + threads_per_block - 1) / threads_per_block;
 
-	cuda_calculate_3d_information<<<blocks_per_grid, threads_per_block>>>(dev_vertices_z, dev_inv_cam_intrinsic,
+	Calculate_Vertices_And_Normals<<<blocks_per_grid, threads_per_block>>>(dev_vertices_z, dev_inv_cam_intrinsic,
 																		  dev_vertices_x, dev_vertices_y,
 																		  dev_normals_x, dev_normals_y, dev_normals_z,
 																		  dev_vertex_mask, dev_depth_image_coord_y, dev_depth_image_coord_x);

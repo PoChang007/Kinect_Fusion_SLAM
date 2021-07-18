@@ -1,6 +1,6 @@
 #include "kinfu_pipeline.h"
 
-__global__ void bilateral_filter(float *dev_depth_Image_array, float *dev_bilateral_output_array,
+__global__ void Bilateral_Filtering(float *dev_depth_Image_array, float *dev_bilateral_output_array,
 								 float *dev_spatial_kernel_array, float *dev_depth_Image_index_y, float *dev_depth_Image_index_x,
 								 const int bw_radius, const float sigma_r)
 {
@@ -82,7 +82,7 @@ extern "C" void Bilateral_Filtering(cv::Mat &depth_Image, cv::Mat &bilateral_out
 	int blocksPerGrid = (WIDTH * HEIGHT + threadsPerBlock - 1) / threadsPerBlock;
 
 	// add kernel here
-	bilateral_filter<<<blocksPerGrid, threadsPerBlock>>>(dev_depth_Image_array, dev_bilateral_output_array,
+	Bilateral_Filtering<<<blocksPerGrid, threadsPerBlock>>>(dev_depth_Image_array, dev_bilateral_output_array,
 														 dev_spatial_kernel_array, dev_depth_Image_index_y, dev_depth_Image_index_x,
 														 bw_radius, sigma_r);
 	cudaDeviceSynchronize();

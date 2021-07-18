@@ -4,7 +4,7 @@
 #define SIZE_6 6
 #define SIZE_36 36
 
-__global__ void icp(float *dev_vertices_x, float *dev_vertices_y, float *dev_vertices_z,
+__global__ void ICP(float *dev_vertices_x, float *dev_vertices_y, float *dev_vertices_z,
 					float *dev_normals_x, float *dev_normals_y, float *dev_normals_z,
 					float *dev_surface_points_x, float *dev_surface_points_y, float *dev_surface_points_z,
 					float *dev_surface_normals_x, float *dev_surface_normals_y, float *dev_surface_normals_z,
@@ -51,7 +51,7 @@ __global__ void icp(float *dev_vertices_x, float *dev_vertices_y, float *dev_ver
 					float3 update_normal = make_float3(dev_refinement_6dof_trans[0] * dev_normals_x[x] + dev_refinement_6dof_trans[1] * dev_normals_y[x] + dev_refinement_6dof_trans[2] * dev_normals_z[x],
 													   dev_refinement_6dof_trans[4] * dev_normals_x[x] + dev_refinement_6dof_trans[5] * dev_normals_y[x] + dev_refinement_6dof_trans[6] * dev_normals_z[x],
 													   dev_refinement_6dof_trans[8] * dev_normals_x[x] + dev_refinement_6dof_trans[9] * dev_normals_y[x] + dev_refinement_6dof_trans[10] * dev_normals_z[x]);
-					get_normalized(update_normal);
+					Get_Normalized(update_normal);
 
 					float3 vector_a = make_float3(dev_surface_normals_x[projected_index],
 												  dev_surface_normals_y[projected_index],
@@ -134,7 +134,7 @@ __global__ void icp(float *dev_vertices_x, float *dev_vertices_y, float *dev_ver
 	}
 }
 
-void cholesky_decomposition(float matrix[][6], int n, float **lower)
+void Cholesky_Decomposition(float matrix[][6], int n, float **lower)
 {
 	// Decomposing a matrix into Lower Triangular
 	for (int i = 0; i < n; i++)
@@ -169,7 +169,7 @@ void cholesky_decomposition(float matrix[][6], int n, float **lower)
 	}
 }
 
-void solve_linear_system(float *linear_system_left_sum, float *linear_system_right_sum, cv::Mat &refinement_6dof_trans_cv,
+void Solve_Linear_System(float *linear_system_left_sum, float *linear_system_right_sum, cv::Mat &refinement_6dof_trans_cv,
 						 cv::Mat &global_extrinsic_cv, cv::Mat &updated_6dof_cv, int i)
 {
 	float linear_system_left_sum_2d[6][6] = {{linear_system_left_sum[0], linear_system_left_sum[1], linear_system_left_sum[2], linear_system_left_sum[3], linear_system_left_sum[4], linear_system_left_sum[5]},
@@ -188,7 +188,7 @@ void solve_linear_system(float *linear_system_left_sum, float *linear_system_rig
 		lower_triangle_matrix[ii] = new float[6];
 		std::fill(lower_triangle_matrix[ii], lower_triangle_matrix[ii] + 6, 0.0f);
 	}
-	cholesky_decomposition(linear_system_left_sum_2d, 6, lower_triangle_matrix);
+	Cholesky_Decomposition(linear_system_left_sum_2d, 6, lower_triangle_matrix);
 
 	float *lower_triangle_vector = new float[36];
 	for (int x = 0; x < 6; x++)
@@ -221,7 +221,7 @@ void solve_linear_system(float *linear_system_left_sum, float *linear_system_rig
 	delete[] lower_triangle_vector;
 }
 
-__global__ void sum_array(float *g_idata, float *g_odata, int k)
+__global__ void Sum_Array(float *g_idata, float *g_odata, int k)
 {
 	extern __shared__ float sdata[64];
 
@@ -344,7 +344,7 @@ extern "C" void Estimate_Sensor_Pose(cv::Mat &cam_intrinsic_cv, cv::Mat &global_
 		cudaMemcpy(dev_linear_system_right_matrix, linear_system_right_matrix, WIDTH * HEIGHT * sizeof(float) * SIZE_6, cudaMemcpyHostToDevice);
 		cudaMemcpy(dev_linear_system_left_matrix, linear_system_left_matrix, WIDTH * HEIGHT * sizeof(float) * SIZE_36, cudaMemcpyHostToDevice);
 
-		icp<<<blocks_per_grid, threads_per_block>>>(dev_vertices_x, dev_vertices_y, dev_vertices_z,
+		ICP<<<blocks_per_grid, threads_per_block>>>(dev_vertices_x, dev_vertices_y, dev_vertices_z,
 													dev_normals_x, dev_normals_y, dev_normals_z,
 													dev_surface_points_x, dev_surface_points_y, dev_surface_points_z,
 													dev_surface_normals_x, dev_surface_normals_y, dev_surface_normals_z,
@@ -359,7 +359,7 @@ extern "C" void Estimate_Sensor_Pose(cv::Mat &cam_intrinsic_cv, cv::Mat &global_
 
 		for (int k = 0; k < SIZE_6; k++)
 		{
-			sum_array<<<blocks_per_grid, threads_per_block>>>(dev_linear_system_right_matrix, dev_block_cumulative_sum, k);
+			Sum_Array<<<blocks_per_grid, threads_per_block>>>(dev_linear_system_right_matrix, dev_block_cumulative_sum, k);
 			cudaDeviceSynchronize();
 			// copy output vector from GPU buffer to host memory
 			cudaMemcpy(block_cumulative_sum, dev_block_cumulative_sum, blocks_per_grid * sizeof(float), cudaMemcpyDeviceToHost);
@@ -372,7 +372,7 @@ extern "C" void Estimate_Sensor_Pose(cv::Mat &cam_intrinsic_cv, cv::Mat &global_
 		}
 		for (int k = 0; k < SIZE_36; k++)
 		{
-			sum_array<<<blocks_per_grid, threads_per_block>>>(dev_linear_system_left_matrix, dev_block_cumulative_sum, k);
+			Sum_Array<<<blocks_per_grid, threads_per_block>>>(dev_linear_system_left_matrix, dev_block_cumulative_sum, k);
 			cudaDeviceSynchronize();
 			cudaMemcpy(block_cumulative_sum, dev_block_cumulative_sum, blocks_per_grid * sizeof(float), cudaMemcpyDeviceToHost);
 			for (int i = 0; i < blocks_per_grid; i++)
@@ -395,7 +395,7 @@ extern "C" void Estimate_Sensor_Pose(cv::Mat &cam_intrinsic_cv, cv::Mat &global_
 		cv::Mat updated_6dof_cv(SIZE_6, 1, CV_32F);
 
 		// solve linear system step by step
-		//solve_linear_system(linear_system_left_sum, linear_system_right_sum, refinement_6dof_trans_cv,
+		//Solve_Linear_System(linear_system_left_sum, linear_system_right_sum, refinement_6dof_trans_cv,
 		//	                global_extrinsic_cv, updated_6dof_cv, i);
 
 		memcpy(updated_6dof_cv.data, linear_system_right_sum, SIZE_6 * 1 * sizeof(float));
