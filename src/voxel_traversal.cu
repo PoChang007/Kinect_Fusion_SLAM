@@ -424,12 +424,12 @@ __global__ void Voxel_Traversal(float *dev_surface_points_x, float *dev_surface_
 
 extern "C" void Ray_Casting(cv::Mat &surface_points_x_cv, cv::Mat &surface_points_y_cv, cv::Mat &surface_points_z_cv,
                             cv::Mat &surface_normals_x_cv, cv::Mat &surface_normals_y_cv, cv::Mat &surface_normals_z_cv,
-                            float *voxel_grid_x, float *voxel_grid_y, float *voxel_grid_z,
-                            float *depth_image_coord_y_cv, float *depth_image_coord_x_cv,
-                            cv::Mat &cam_intrinsic_cv, cv::Mat &global_extrinsic_cv, float *global_tsdf,
-                            cv::Mat &vertices_z_cv, cv::Mat &traversal_recording, float truncated_distance,
-                            int voxel_length, int voxel_width, int voxel_height, int voxel_grid_x_start_pos,
-                            int voxel_grid_y_start_pos, int voxel_grid_z_start_pos, float voxel_distance)
+                            const float *voxel_grid_x, const float *voxel_grid_y, const float *voxel_grid_z,
+                            const float *depth_image_coord_y_cv, const float *depth_image_coord_x_cv,
+                            const cv::Mat &cam_intrinsic_cv, cv::Mat &global_extrinsic_cv, float *global_tsdf,
+                            cv::Mat &vertices_z_cv, cv::Mat &traversal_recording, const float truncated_distance,
+                            const int voxel_length, const int voxel_width, const int voxel_height, const int voxel_grid_x_start_pos,
+                            const int voxel_grid_y_start_pos, const int voxel_grid_z_start_pos, const float voxel_distance)
 {
     // get current frame's camera position
     cv::Mat camera_position = global_extrinsic_cv(cv::Range(0, 3), cv::Range(3, 4));
