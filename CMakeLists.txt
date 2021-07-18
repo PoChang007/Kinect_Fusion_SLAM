@@ -13,12 +13,16 @@ if(CUDA_FOUND)
     message("Cuda version: " ${CUDA_VERSION})
     CUDA_ADD_EXECUTABLE(kinfu_imp
     src/system_interface.cpp
-    src/system_interface.h
-    src/data_initialization.cpp
+    src/kinfu_pipeline.cpp
+    src/kinfu_pipeline.h
+    src/system_utility.cpp
+    src/system_utility.h
+    src/parallel_processing.h
     src/projective_tsdf.cu
     src/voxel_traversal.cu
     src/raw_vertices.cu
     src/sensor_pose_estimation.cu
+    src/bilateral_filtering.cu
     src/cuda_functions.cuh
     )
 endif()

@@ -18,11 +18,6 @@
 #define INTRINSIC_ELEMENTS 9
 #define EXTRINSIC_ELEMENTS 16
 
-// functions in cuda files
-extern "C" void bilateral_filtering(cv::Mat &depth_Image, cv::Mat &bilateral_output,
-                                    cv::Mat &weight_d, float *depth_Image_index_y, float *depth_Image_index_x,
-                                    const int bw_radius, const float sigma_r);
-
 extern "C" void projective_tsdf(float *voxel_grid_x, float *voxel_grid_y, float *voxel_grid_z,
                                 cv::Mat &intrinsic_matrix, cv::Mat &extrinsic_matrix, float *global_tsdf, float *global_weight_tsdf,
                                 cv::Mat &depth_image, float truncated_distance, float sdf_minimum, float sdf_maximum,
@@ -48,5 +43,9 @@ extern "C" void estimate_sensor_pose(cv::Mat &intrinsic_matrix, cv::Mat &extrins
                                      cv::Mat &surface_prediction_x, cv::Mat &surface_prediction_y, cv::Mat &surface_prediction_z,
                                      cv::Mat &surface_prediction_normal_x, cv::Mat &surface_prediction_normal_y, cv::Mat &surface_prediction_normal_z,
                                      cv::Mat &vertex_mask);
+
+extern "C" void bilateral_filtering(cv::Mat &depth_Image, cv::Mat &bilateral_output,
+                                    cv::Mat &weight_d, float *depth_Image_index_y, float *depth_Image_index_x,
+                                    const int bw_radius, const float sigma_r);
 
 #endif
