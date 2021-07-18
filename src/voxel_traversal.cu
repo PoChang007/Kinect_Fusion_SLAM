@@ -1,8 +1,8 @@
-#include "kinect_fusion.h"
+#include "kinfu_pipeline.h"
 #include "cuda_functions.cuh"
 
-__device__ float ray_box_intersection(bool& flag, float3& ray_direction, float3& voxel_volume_min, float3& voxel_volume_max,
-                                      float& ray_skipping_global_x, float& ray_skipping_global_y, float& ray_skipping_global_z)
+__device__ float Ray_Box_Intersection(bool &flag, float3 &ray_direction, float3 &voxel_volume_min, float3 &voxel_volume_max,
+                                      float &ray_skipping_global_x, float &ray_skipping_global_y, float &ray_skipping_global_z)
 {
     float tmin, tmax, tymin, tymax, tzmin, tzmax;
 
@@ -72,7 +72,7 @@ __device__ float ray_box_intersection(bool& flag, float3& ray_direction, float3&
     return tmin;
 }
 
-__global__ void voxel_traversal(float *dev_surface_points_x, float *dev_surface_points_y, float *dev_surface_points_z,
+__global__ void Voxel_Traversal(float *dev_surface_points_x, float *dev_surface_points_y, float *dev_surface_points_z,
                                 float *dev_surface_normals_x, float *dev_surface_normals_y, float *dev_surface_normals_z,
                                 float *dev_depth_image_coord_x, float *dev_depth_image_coord_y,
                                 float *dev_cam_intrinsic, float *dev_global_extrinsic,
@@ -83,7 +83,8 @@ __global__ void voxel_traversal(float *dev_surface_points_x, float *dev_surface_
                                 float truncated_distance, float3 voxel_volume_min, float3 voxel_volume_max, float voxel_distance)
 {
     const int x = blockDim.x * blockIdx.x + threadIdx.x;
-    if (x >= WIDTH * HEIGHT) return;
+    if (x >= WIDTH * HEIGHT)
+        return;
 
     if (dev_depth_image[x] != 0)
     {
@@ -109,11 +110,11 @@ __global__ void voxel_traversal(float *dev_surface_points_x, float *dev_surface_
         float ray_lambda_global_z = dev_global_extrinsic[8] * lambda_vector.x + dev_global_extrinsic[9] * lambda_vector.y + dev_global_extrinsic[10] * lambda_vector.z + dev_global_extrinsic[11] * 1.f;
 
         float3 ray_direction = make_float3((ray_lambda_global_x - camera_position.x), (ray_lambda_global_y - camera_position.y), (ray_lambda_global_z - camera_position.z));
-        get_normalized(ray_direction);
+        Get_Normalized(ray_direction);
 
         // ray box intersection test
         bool flag = false;
-        float tmin = ray_box_intersection(flag, ray_direction, voxel_volume_min, voxel_volume_max,
+        float tmin = Ray_Box_Intersection(flag, ray_direction, voxel_volume_min, voxel_volume_max,
                                           ray_skipping_global_x, ray_skipping_global_y, ray_skipping_global_z);
 
         if (flag == true)
@@ -289,7 +290,7 @@ __global__ void voxel_traversal(float *dev_surface_points_x, float *dev_surface_
                     int z_pp = (ZX - 1) * voxel_width * voxel_height + (ZY - 1) * voxel_height + z_p_index;
                     // for normal interpolation index
                     int x_nn = (voxel_index_x - 2) * voxel_width * voxel_height + (voxel_index_y - 1) * voxel_height + (voxel_index_z - 1);
-                    int x_pn = (voxel_index_x) * voxel_width * voxel_height + (voxel_index_y - 1) * voxel_height + (voxel_index_z - 1);
+                    int x_pn = (voxel_index_x)*voxel_width * voxel_height + (voxel_index_y - 1) * voxel_height + (voxel_index_z - 1);
                     int y_nn = (voxel_index_x - 1) * voxel_width * voxel_height + (voxel_index_y - 2) * voxel_height + (voxel_index_z - 1);
                     int y_pn = (voxel_index_x - 1) * voxel_width * voxel_height + (voxel_index_y)*voxel_height + (voxel_index_z - 1);
                     int z_nn = (voxel_index_x - 1) * voxel_width * voxel_height + (voxel_index_y - 1) * voxel_height + (voxel_index_z - 2);
@@ -349,22 +350,22 @@ __global__ void voxel_traversal(float *dev_surface_points_x, float *dev_surface_
                     surface_normal_prediction.x = (dev_global_tsdf[x_pn] - dev_global_tsdf[x_nn]) / 2.0f;
                     surface_normal_prediction.y = (dev_global_tsdf[y_pn] - dev_global_tsdf[y_nn]) / 2.0f;
                     surface_normal_prediction.z = (dev_global_tsdf[z_pn] - dev_global_tsdf[z_nn]) / 2.0f;
-                    
-					//check the normal vector to make sure pointing outward
-					float3 vector_a = make_float3((camera_position.x - surface_prediction.x), (camera_position.y - surface_prediction.y), (camera_position.z - surface_prediction.z));
-					get_normalized(vector_a);
-					float3 vector_b = make_float3(surface_normal_prediction.x, surface_normal_prediction.y, surface_normal_prediction.z);
-					get_normalized(vector_b);
 
-					double cos_theta = vector_a.x * vector_b.x + vector_a.y * vector_b.y + vector_a.z * vector_b.z;
-					double angle = acos(cos_theta) * (180.0f / CUDART_PI_F);
+                    //check the normal vector to make sure pointing outward
+                    float3 vector_a = make_float3((camera_position.x - surface_prediction.x), (camera_position.y - surface_prediction.y), (camera_position.z - surface_prediction.z));
+                    Get_Normalized(vector_a);
+                    float3 vector_b = make_float3(surface_normal_prediction.x, surface_normal_prediction.y, surface_normal_prediction.z);
+                    Get_Normalized(vector_b);
 
-					if (angle > 90)
-					{
-						vector_b.x = -vector_b.x;
-						vector_b.y = -vector_b.y;
-						vector_b.z = -vector_b.z;
-					}
+                    double cos_theta = vector_a.x * vector_b.x + vector_a.y * vector_b.y + vector_a.z * vector_b.z;
+                    double angle = acos(cos_theta) * (180.0f / CUDART_PI_F);
+
+                    if (angle > 90)
+                    {
+                        vector_b.x = -vector_b.x;
+                        vector_b.y = -vector_b.y;
+                        vector_b.z = -vector_b.z;
+                    }
 
                     dev_surface_points_x[x] = surface_prediction.x;
                     dev_surface_points_y[x] = surface_prediction.y;
@@ -421,17 +422,17 @@ __global__ void voxel_traversal(float *dev_surface_points_x, float *dev_surface_
     }
 }
 
-extern "C" void ray_casting(Mat &surface_points_x_cv, Mat &surface_points_y_cv, Mat &surface_points_z_cv,
-                            Mat &surface_normals_x_cv, Mat &surface_normals_y_cv, Mat &surface_normals_z_cv,
+extern "C" void Ray_Casting(cv::Mat &surface_points_x_cv, cv::Mat &surface_points_y_cv, cv::Mat &surface_points_z_cv,
+                            cv::Mat &surface_normals_x_cv, cv::Mat &surface_normals_y_cv, cv::Mat &surface_normals_z_cv,
                             float *voxel_grid_x, float *voxel_grid_y, float *voxel_grid_z,
                             float *depth_image_coord_y_cv, float *depth_image_coord_x_cv,
-                            Mat &cam_intrinsic_cv, Mat &global_extrinsic_cv, float *global_tsdf,
-                            Mat &vertices_z_cv, Mat &traversal_recording, float truncated_distance,
+                            cv::Mat &cam_intrinsic_cv, cv::Mat &global_extrinsic_cv, float *global_tsdf,
+                            cv::Mat &vertices_z_cv, cv::Mat &traversal_recording, float truncated_distance,
                             int voxel_length, int voxel_width, int voxel_height, int voxel_grid_x_start_pos,
                             int voxel_grid_y_start_pos, int voxel_grid_z_start_pos, float voxel_distance)
 {
     // get current frame's camera position
-    Mat camera_position = global_extrinsic_cv(Range(0, 3), Range(3, 4));
+    cv::Mat camera_position = global_extrinsic_cv(cv::Range(0, 3), cv::Range(3, 4));
     float3 voxel_volume_min = make_float3((float)(voxel_grid_x_start_pos * voxel_distance), (float)(voxel_grid_y_start_pos * voxel_distance), (float)(voxel_grid_z_start_pos * voxel_distance));
     float voxel_max_x = (float)((voxel_grid_x_start_pos + voxel_length) * voxel_distance);
     float voxel_max_y = (float)((voxel_grid_y_start_pos + voxel_width) * voxel_distance);
@@ -442,46 +443,37 @@ extern "C" void ray_casting(Mat &surface_points_x_cv, Mat &surface_points_y_cv, 
     cv::Mat inv_extrinsic_matrix = global_extrinsic_cv.inv();
 
     // gpu data allocation
-    float *dev_surface_points_x = 0;
-    float *dev_surface_points_y = 0;
-    float *dev_surface_points_z = 0;
-    float *dev_surface_normals_x = 0;
-    float *dev_surface_normals_y = 0;
-    float *dev_surface_normals_z = 0;
+    float *dev_surface_points_x = 0, *dev_surface_points_y = 0, *dev_surface_points_z = 0;
+    float *dev_surface_normals_x = 0, *dev_surface_normals_y = 0, *dev_surface_normals_z = 0;
 
-    float *dev_depth_image_coord_y = 0;
-    float *dev_depth_image_coord_x = 0;
-    float *dev_cam_intrinsic = 0;
-    float *dev_global_extrinsic = 0;
-    float *dev_inv_cam_intrinsic = 0;
-    float *dev_inv_global_extrinsic = 0;
+    float *dev_depth_image_coord_y = 0, *dev_depth_image_coord_x = 0;
+    float *dev_cam_intrinsic = 0, *dev_inv_cam_intrinsic = 0;
+    float *dev_global_extrinsic = 0, *dev_inv_global_extrinsic = 0;
 
     float *dev_vertices_z = 0;
-    float *dev_voxel_grid_x = 0;
-    float *dev_voxel_grid_y = 0;
-    float *dev_voxel_grid_z = 0;
+    float *dev_voxel_grid_x = 0, *dev_voxel_grid_y = 0, *dev_voxel_grid_z = 0;
     float *dev_global_tsdf = 0;
 
     // allocate GPU buffers for data
-    cudaMalloc((void**)&dev_surface_points_x, WIDTH * HEIGHT * sizeof(float));
-    cudaMalloc((void**)&dev_surface_points_y, WIDTH * HEIGHT * sizeof(float));
-    cudaMalloc((void**)&dev_surface_points_z, WIDTH * HEIGHT * sizeof(float));
-    cudaMalloc((void**)&dev_surface_normals_x, WIDTH * HEIGHT * sizeof(float));
-    cudaMalloc((void**)&dev_surface_normals_y, WIDTH * HEIGHT * sizeof(float));
-    cudaMalloc((void**)&dev_surface_normals_z, WIDTH * HEIGHT * sizeof(float));
+    cudaMalloc((void **)&dev_surface_points_x, WIDTH * HEIGHT * sizeof(float));
+    cudaMalloc((void **)&dev_surface_points_y, WIDTH * HEIGHT * sizeof(float));
+    cudaMalloc((void **)&dev_surface_points_z, WIDTH * HEIGHT * sizeof(float));
+    cudaMalloc((void **)&dev_surface_normals_x, WIDTH * HEIGHT * sizeof(float));
+    cudaMalloc((void **)&dev_surface_normals_y, WIDTH * HEIGHT * sizeof(float));
+    cudaMalloc((void **)&dev_surface_normals_z, WIDTH * HEIGHT * sizeof(float));
 
-    cudaMalloc((void**)&dev_depth_image_coord_x, WIDTH * HEIGHT * sizeof(float));
-    cudaMalloc((void**)&dev_depth_image_coord_y, WIDTH * HEIGHT * sizeof(float));
-    cudaMalloc((void**)&dev_cam_intrinsic, INTRINSIC_ELEMENTS * sizeof(float));
-    cudaMalloc((void**)&dev_global_extrinsic, EXTRINSIC_ELEMENTS * sizeof(float));
-    cudaMalloc((void**)&dev_inv_cam_intrinsic, INTRINSIC_ELEMENTS * sizeof(float));
-    cudaMalloc((void**)&dev_inv_global_extrinsic, EXTRINSIC_ELEMENTS * sizeof(float));
+    cudaMalloc((void **)&dev_depth_image_coord_x, WIDTH * HEIGHT * sizeof(float));
+    cudaMalloc((void **)&dev_depth_image_coord_y, WIDTH * HEIGHT * sizeof(float));
+    cudaMalloc((void **)&dev_cam_intrinsic, INTRINSIC_ELEMENTS * sizeof(float));
+    cudaMalloc((void **)&dev_global_extrinsic, EXTRINSIC_ELEMENTS * sizeof(float));
+    cudaMalloc((void **)&dev_inv_cam_intrinsic, INTRINSIC_ELEMENTS * sizeof(float));
+    cudaMalloc((void **)&dev_inv_global_extrinsic, EXTRINSIC_ELEMENTS * sizeof(float));
 
-    cudaMalloc((void**)&dev_vertices_z, WIDTH * HEIGHT * sizeof(float));
-    cudaMalloc((void**)&dev_voxel_grid_x, voxel_length * voxel_width * voxel_height * sizeof(float));
-    cudaMalloc((void**)&dev_voxel_grid_y, voxel_length * voxel_width * voxel_height * sizeof(float));
-    cudaMalloc((void**)&dev_voxel_grid_z, voxel_length * voxel_width * voxel_height * sizeof(float));
-    cudaMalloc((void**)&dev_global_tsdf, voxel_length * voxel_width * voxel_height * sizeof(float));
+    cudaMalloc((void **)&dev_vertices_z, WIDTH * HEIGHT * sizeof(float));
+    cudaMalloc((void **)&dev_voxel_grid_x, voxel_length * voxel_width * voxel_height * sizeof(float));
+    cudaMalloc((void **)&dev_voxel_grid_y, voxel_length * voxel_width * voxel_height * sizeof(float));
+    cudaMalloc((void **)&dev_voxel_grid_z, voxel_length * voxel_width * voxel_height * sizeof(float));
+    cudaMalloc((void **)&dev_global_tsdf, voxel_length * voxel_width * voxel_height * sizeof(float));
 
     // copy input from host memory to GPU buffers.
     cudaMemcpy(dev_surface_points_x, surface_points_x_cv.data, WIDTH * HEIGHT * sizeof(float), cudaMemcpyHostToDevice);
@@ -507,7 +499,7 @@ extern "C" void ray_casting(Mat &surface_points_x_cv, Mat &surface_points_y_cv, 
     int threads_per_block = 64;
     int blocks_per_grid = (WIDTH * HEIGHT + threads_per_block - 1) / threads_per_block;
 
-    voxel_traversal<<<blocks_per_grid, threads_per_block>>>(dev_surface_points_x, dev_surface_points_y, dev_surface_points_z,
+    Voxel_Traversal<<<blocks_per_grid, threads_per_block>>>(dev_surface_points_x, dev_surface_points_y, dev_surface_points_z,
                                                             dev_surface_normals_x, dev_surface_normals_y, dev_surface_normals_z,
                                                             dev_depth_image_coord_x, dev_depth_image_coord_y,
                                                             dev_cam_intrinsic, dev_global_extrinsic,
