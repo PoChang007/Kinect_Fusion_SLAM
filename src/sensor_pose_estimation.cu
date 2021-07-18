@@ -243,7 +243,7 @@ __global__ void Sum_Array(float *g_idata, float *g_odata, int k)
 		g_odata[blockIdx.x] = sdata[0];
 }
 
-extern "C" void Estimate_Sensor_Pose(cv::Mat &cam_intrinsic_cv, cv::Mat &global_extrinsic_cv,
+extern "C" void Estimate_Sensor_Pose(const cv::Mat &cam_intrinsic_cv, cv::Mat &global_extrinsic_cv,
 									 cv::Mat &vertices_x_cv, cv::Mat &vertices_y_cv, cv::Mat &vertices_z_cv,
 									 cv::Mat &normals_x_cv, cv::Mat &normals_y_cv, cv::Mat &normals_z_cv,
 									 cv::Mat &surface_points_x_cv, cv::Mat &surface_points_y_cv, cv::Mat &surface_points_z_cv,

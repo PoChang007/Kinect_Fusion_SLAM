@@ -47,7 +47,7 @@ __global__ void Bilateral_Filtering(float *dev_depth_Image_array, float *dev_bil
 }
 
 extern "C" void Bilateral_Filtering(cv::Mat &depth_Image, cv::Mat &bilateral_output,
-									cv::Mat &spatial_kernel, float *depth_Image_index_y, float *depth_Image_index_x,
+									cv::Mat &spatial_kernel, const float *depth_Image_index_y, const float *depth_Image_index_x,
 									const int bw_radius, const float sigma_r)
 {
 	//cudaEvent_t start, stop;

@@ -94,10 +94,10 @@ __global__ void Projective_TSDF(float *dev_cam_intrinsic, float *dev_global_extr
     }
 }
 
-extern "C" void Projective_TSDF(float *voxel_grid_x, float *voxel_grid_y, float *voxel_grid_z,
-                                cv::Mat &cam_intrinsic_cv, cv::Mat &global_extrinsic_cv, float *global_tsdf, float *global_weight_tsdf,
-                                cv::Mat &vertices_z_cv, float truncated_distance, float sdf_minimum, float sdf_maximum,
-                                int voxel_length, int voxel_width, int voxel_height, bool initial_tsdf_construct)
+extern "C" void Projective_TSDF(const float *voxel_grid_x, const float *voxel_grid_y, const float *voxel_grid_z,
+                                const cv::Mat &cam_intrinsic_cv, cv::Mat &global_extrinsic_cv, float *global_tsdf, float *global_weight_tsdf,
+                                cv::Mat &vertices_z_cv, const float truncated_distance, const float sdf_minimum, const float sdf_maximum,
+                                const int voxel_length, const int voxel_width, const int voxel_height, bool initial_tsdf_construct)
 {
     cv::Mat inv_camera_intrinsic_m = cam_intrinsic_cv.inv();
     cv::Mat inv_extrinsic_matrix = global_extrinsic_cv.inv();

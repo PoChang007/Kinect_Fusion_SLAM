@@ -52,7 +52,7 @@ __global__ void Calculate_Vertices_And_Normals(float *dev_vertices_z, float *dev
 extern "C" void Calculate_Vertices_And_Normals(cv::Mat &vertices_z_cv, cv::Mat &cam_intrinsic_cv,
 											   cv::Mat &vertices_x_cv, cv::Mat &vertices_y_cv,
 											   cv::Mat &normals_x_cv, cv::Mat &normals_y_cv, cv::Mat &normals_z_cv,
-											   cv::Mat &vertex_mask, float *depth_image_coord_y, float *depth_image_coord_x)
+											   cv::Mat &vertex_mask, const float *depth_image_coord_y, const float *depth_image_coord_x)
 {
 	cv::Mat inv_cam_intrinsic_cv = cam_intrinsic_cv.inv();
 
