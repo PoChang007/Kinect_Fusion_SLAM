@@ -46,7 +46,7 @@ __global__ void bilateral_filter(float *dev_depth_Image_array, float *dev_bilate
 	}
 }
 
-extern "C" void bilateral_filtering(cv::Mat &depth_Image, cv::Mat &bilateral_output,
+extern "C" void Bilateral_Filtering(cv::Mat &depth_Image, cv::Mat &bilateral_output,
 									cv::Mat &spatial_kernel, float *depth_Image_index_y, float *depth_Image_index_x,
 									const int bw_radius, const float sigma_r)
 {

@@ -5,48 +5,48 @@ namespace Kinfu
 {
     SystemUtility::SystemUtility()
     {
-        rayCastingData = std::make_unique<RayCastingData>();
-        rayCastingData->surface_prediction_x = cv::Mat::zeros(HEIGHT, WIDTH, CV_32F);
-        rayCastingData->surface_prediction_y = cv::Mat::zeros(HEIGHT, WIDTH, CV_32F);
-        rayCastingData->surface_prediction_z = cv::Mat::zeros(HEIGHT, WIDTH, CV_32F);
-        rayCastingData->surface_prediction_normal_x = cv::Mat::zeros(HEIGHT, WIDTH, CV_32F);
-        rayCastingData->surface_prediction_normal_y = cv::Mat::zeros(HEIGHT, WIDTH, CV_32F);
-        rayCastingData->surface_prediction_normal_z = cv::Mat::zeros(HEIGHT, WIDTH, CV_32F);
-        rayCastingData->traversal_recording = cv::Mat::zeros(HEIGHT, WIDTH, CV_32F);
+        ray_casting_data = std::make_unique<RayCastingData>();
+        ray_casting_data->surface_prediction_x = cv::Mat::zeros(HEIGHT, WIDTH, CV_32F);
+        ray_casting_data->surface_prediction_y = cv::Mat::zeros(HEIGHT, WIDTH, CV_32F);
+        ray_casting_data->surface_prediction_z = cv::Mat::zeros(HEIGHT, WIDTH, CV_32F);
+        ray_casting_data->surface_prediction_normal_x = cv::Mat::zeros(HEIGHT, WIDTH, CV_32F);
+        ray_casting_data->surface_prediction_normal_y = cv::Mat::zeros(HEIGHT, WIDTH, CV_32F);
+        ray_casting_data->surface_prediction_normal_z = cv::Mat::zeros(HEIGHT, WIDTH, CV_32F);
+        ray_casting_data->traversal_recording = cv::Mat::zeros(HEIGHT, WIDTH, CV_32F);
 
-        depthData = std::make_unique<DepthImage3dData>();
-        depthData->depth_image_next = cv::Mat::zeros(HEIGHT, WIDTH, CV_16UC1);
-        depthData->raw_vectirces_x = cv::Mat::zeros(HEIGHT, WIDTH, CV_32F);
-        depthData->raw_vectirces_y = cv::Mat::zeros(HEIGHT, WIDTH, CV_32F);
-        depthData->raw_normal_x = cv::Mat::zeros(HEIGHT, WIDTH, CV_32F);
-        depthData->raw_normal_y = cv::Mat::zeros(HEIGHT, WIDTH, CV_32F);
-        depthData->raw_normal_z = cv::Mat::zeros(HEIGHT, WIDTH, CV_32F);
-        depthData->vertex_mask = cv::Mat::zeros(HEIGHT, WIDTH, CV_8U);
-        depthData->bilateral_output = cv::Mat::zeros(HEIGHT, WIDTH, CV_32F);
+        depth_data = std::make_unique<DepthImage3dData>();
+        depth_data->depth_image_next = cv::Mat::zeros(HEIGHT, WIDTH, CV_16UC1);
+        depth_data->raw_vectirces_x = cv::Mat::zeros(HEIGHT, WIDTH, CV_32F);
+        depth_data->raw_vectirces_y = cv::Mat::zeros(HEIGHT, WIDTH, CV_32F);
+        depth_data->raw_normal_x = cv::Mat::zeros(HEIGHT, WIDTH, CV_32F);
+        depth_data->raw_normal_y = cv::Mat::zeros(HEIGHT, WIDTH, CV_32F);
+        depth_data->raw_normal_z = cv::Mat::zeros(HEIGHT, WIDTH, CV_32F);
+        depth_data->vertex_mask = cv::Mat::zeros(HEIGHT, WIDTH, CV_8U);
+        depth_data->bilateral_output = cv::Mat::zeros(HEIGHT, WIDTH, CV_32F);
     }
 
     SystemUtility::~SystemUtility()
     {
         std::cout << "Data destroy" << std::endl;
-        rayCastingData->surface_prediction_x.release();
-        rayCastingData->surface_prediction_y.release();
-        rayCastingData->surface_prediction_z.release();
-        rayCastingData->surface_prediction_normal_x.release();
-        rayCastingData->surface_prediction_normal_y.release();
-        rayCastingData->surface_prediction_normal_z.release();
-        rayCastingData->traversal_recording.release();
+        ray_casting_data->surface_prediction_x.release();
+        ray_casting_data->surface_prediction_y.release();
+        ray_casting_data->surface_prediction_z.release();
+        ray_casting_data->surface_prediction_normal_x.release();
+        ray_casting_data->surface_prediction_normal_y.release();
+        ray_casting_data->surface_prediction_normal_z.release();
+        ray_casting_data->traversal_recording.release();
 
-        depthData->depth_image_next.release();
-        depthData->raw_vectirces_x.release();
-        depthData->raw_vectirces_y.release();
-        depthData->raw_normal_x.release();
-        depthData->raw_normal_y.release();
-        depthData->raw_normal_z.release();
-        depthData->vertex_mask.release();
-        depthData->bilateral_output.release();
+        depth_data->depth_image_next.release();
+        depth_data->raw_vectirces_x.release();
+        depth_data->raw_vectirces_y.release();
+        depth_data->raw_normal_x.release();
+        depth_data->raw_normal_y.release();
+        depth_data->raw_normal_z.release();
+        depth_data->vertex_mask.release();
+        depth_data->bilateral_output.release();
     }
 
-    void SystemUtility::load_depth_data(cv::Mat &depth_image, int frame_index)
+    void SystemUtility::LoadDepthData(cv::Mat &depth_image, int frame_index)
     {
         char filename[200];
         sprintf(filename, "../data/dep%04d.dat", frame_index);
@@ -58,7 +58,7 @@ namespace Kinfu
         depth_image.convertTo(depth_image, CV_32F);
     }
 
-    void SystemUtility::get_in_range_depth(cv::Mat &depth_image)
+    void SystemUtility::GetRangeDepth(cv::Mat &depth_image)
     {
         // filter out uninterested regions
         float MaxRange = 2000.f;
@@ -71,13 +71,13 @@ namespace Kinfu
         depth_image = depth_image.mul(FilterImage);
     }
 
-    void SystemUtility::meshgrid(const cv::Mat &xgv, const cv::Mat &ygv, cv::Mat &X, cv::Mat &Y)
+    void SystemUtility::GenerateMeshGrid(const cv::Mat &xgv, const cv::Mat &ygv, cv::Mat &X, cv::Mat &Y)
     {
         cv::repeat(xgv.reshape(1, 1), ygv.total(), 1, X);
         cv::repeat(ygv, 1, xgv.total(), Y);
     }
 
-    void SystemUtility::create_spatial_kernel(const cv::Range &xgv, const cv::Range &ygv, cv::Mat &X, cv::Mat &Y)
+    void SystemUtility::CreateSpatialKernel(const cv::Range &xgv, const cv::Range &ygv, cv::Mat &X, cv::Mat &Y)
     {
         std::vector<float> t_x, t_y;
         for (float i = xgv.start; i <= xgv.end; i++)
@@ -88,10 +88,10 @@ namespace Kinfu
         {
             t_y.push_back(i);
         }
-        meshgrid(cv::Mat(t_x), cv::Mat(t_y), X, Y);
+        GenerateMeshGrid(cv::Mat(t_x), cv::Mat(t_y), X, Y);
     }
 
-    void SystemUtility::gaussian_distance_weight(cv::Mat &X, cv::Mat &Y, cv::Mat &weight_d, const float sigma_d)
+    void SystemUtility::GaussianDistanceWeight(cv::Mat &X, cv::Mat &Y, cv::Mat &weight_d, const float sigma_d)
     {
         cv::Mat temp;
         temp = -(X.mul(X, 1) + Y.mul(Y, 1)) / (2 * sigma_d * sigma_d);

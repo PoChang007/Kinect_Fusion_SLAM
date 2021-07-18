@@ -2,7 +2,7 @@
 
 #define WRK 1.0f
 
-__global__ void projective_tsdf(float *dev_cam_intrinsic, float *dev_global_extrinsic,
+__global__ void Projective_TSDF(float *dev_cam_intrinsic, float *dev_global_extrinsic,
                                 float *dev_inv_cam_intrinsic, float *dev_inv_global_extrinsic, float *dev_vertices_z,
                                 float *dev_voxel_grid_x, float *dev_voxel_grid_y, float *dev_voxel_grid_z,
                                 float *dev_global_tsdf, float *dev_global_weight_tsdf,
@@ -94,7 +94,7 @@ __global__ void projective_tsdf(float *dev_cam_intrinsic, float *dev_global_extr
     }
 }
 
-extern "C" void projective_tsdf(float *voxel_grid_x, float *voxel_grid_y, float *voxel_grid_z,
+extern "C" void Projective_TSDF(float *voxel_grid_x, float *voxel_grid_y, float *voxel_grid_z,
                                 cv::Mat &cam_intrinsic_cv, cv::Mat &global_extrinsic_cv, float *global_tsdf, float *global_weight_tsdf,
                                 cv::Mat &vertices_z_cv, float truncated_distance, float sdf_minimum, float sdf_maximum,
                                 int voxel_length, int voxel_width, int voxel_height, bool initial_tsdf_construct)
@@ -140,7 +140,7 @@ extern "C" void projective_tsdf(float *voxel_grid_x, float *voxel_grid_y, float 
     int threads_per_block = 64;
     int blocks_per_grid = (voxel_length * voxel_width * voxel_height + threads_per_block - 1) / threads_per_block;
 
-    projective_tsdf<<<blocks_per_grid, threads_per_block>>>(dev_cam_intrinsic, dev_global_extrinsic,
+    Projective_TSDF<<<blocks_per_grid, threads_per_block>>>(dev_cam_intrinsic, dev_global_extrinsic,
                                                             dev_inv_cam_intrinsic, dev_inv_global_extrinsic, dev_vertices_z,
                                                             dev_voxel_grid_x, dev_voxel_grid_y, dev_voxel_grid_z,
                                                             dev_global_tsdf, dev_global_weight_tsdf,

@@ -11,48 +11,50 @@ namespace Kinfu
     class KinfuPipeline
     {
     public:
-        KinfuPipeline();
+        KinfuPipeline(int start_frame, int next_frame, int per_nth_frame, int end_frame);
         ~KinfuPipeline();
 
         cv::Mat intrinsic_matrix;
         cv::Mat extrinsic_matrix;
 
-        // parameters for kinect fusion environment
-        const int start_frame = 20;
-        const int next_frame = 21;
-        const int per_nth_frame = 1;
-        const int end_frame = 70;
-
-        // voxel size, global tsdf storage
-        const int voxel_grid_x_start = -80;
-        const int voxel_grid_y_start = -80;
-        const int voxel_grid_z_start = -30;
-        const int voxel_length = 160;
-        const int voxel_width = 250;
-        const int voxel_height = 140;
-        const int ARRAY_SIZE = voxel_length * voxel_width * voxel_height;
-        const float voxel_distance = 10;
-
+        // voxel grid, global tsdf storage
         float *voxel_grid_x;
         float *voxel_grid_y;
         float *voxel_grid_z;
         float *global_tsdf;
         float *global_weight_tsdf;
 
-        float truncated_distance = 300.f;
-        // Maximumand Minimum SDF value
-        float sdf_maximum = 300.f;
-        float sdf_minimum = -30.f;
-
+        // iamge index matrices
         float *depth_Image_index_y;
         float *depth_Image_index_x;
-
-        cv::Mat depth_image;
 
         void StartProcessing();
 
     private:
-        std::unique_ptr<SystemUtility> _systemUtility;
+        // parameters for kinect fusion pipeline
+        int _start_frame;
+        int _next_frame;
+        int _per_nth_frame;
+        int _end_frame;
+
+        // define voxel size
+        const int _voxel_grid_x_start{-80};
+        const int _voxel_grid_y_start{-80};
+        const int _voxel_grid_z_start{-30};
+        const int _voxel_length{160};
+        const int _voxel_width{250};
+        const int _voxel_height{140};
+        const int _array_size = _voxel_length * _voxel_width * _voxel_height;
+        const float _voxel_distance{10};
+
+        const float _truncated_distance{300.f};
+
+        // Maximumand Minimum SDF value
+        const float _sdf_maximum{300.f};
+        const float _sdf_minimum{-30.f};
+
+        cv::Mat _initial_depth_image;
+        std::unique_ptr<SystemUtility> _system_utility;
     };
 }
 

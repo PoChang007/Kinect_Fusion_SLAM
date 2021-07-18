@@ -422,7 +422,7 @@ __global__ void voxel_traversal(float *dev_surface_points_x, float *dev_surface_
     }
 }
 
-extern "C" void ray_casting(cv::Mat &surface_points_x_cv, cv::Mat &surface_points_y_cv, cv::Mat &surface_points_z_cv,
+extern "C" void Ray_Casting(cv::Mat &surface_points_x_cv, cv::Mat &surface_points_y_cv, cv::Mat &surface_points_z_cv,
                             cv::Mat &surface_normals_x_cv, cv::Mat &surface_normals_y_cv, cv::Mat &surface_normals_z_cv,
                             float *voxel_grid_x, float *voxel_grid_y, float *voxel_grid_z,
                             float *depth_image_coord_y_cv, float *depth_image_coord_x_cv,

@@ -49,7 +49,7 @@ __global__ void cuda_calculate_3d_information(float *dev_vertices_z, float *dev_
 	}
 }
 
-extern "C" void calcaulte_vectices_and_normals(cv::Mat &vertices_z_cv, cv::Mat &cam_intrinsic_cv,
+extern "C" void Calculate_Vertices_And_Normals(cv::Mat &vertices_z_cv, cv::Mat &cam_intrinsic_cv,
 											   cv::Mat &vertices_x_cv, cv::Mat &vertices_y_cv,
 											   cv::Mat &normals_x_cv, cv::Mat &normals_y_cv, cv::Mat &normals_z_cv,
 											   cv::Mat &vertex_mask, float *depth_image_coord_y, float *depth_image_coord_x)

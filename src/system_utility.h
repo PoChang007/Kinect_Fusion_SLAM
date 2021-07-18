@@ -13,11 +13,11 @@ namespace Kinfu
         SystemUtility();
         ~SystemUtility();
 
-        void load_depth_data(cv::Mat &depth_image, int frame_index);
-        void get_in_range_depth(cv::Mat &depth_image);
-        void meshgrid(const cv::Mat &xgv, const cv::Mat &ygv, cv::Mat &X, cv::Mat &Y);
-        void create_spatial_kernel(const cv::Range &xgv, const cv::Range &ygv, cv::Mat &X, cv::Mat &Y);
-        void gaussian_distance_weight(cv::Mat &X, cv::Mat &Y, cv::Mat &weight_d, const float sigma_d);
+        void LoadDepthData(cv::Mat &depth_image, int frame_index);
+        void GetRangeDepth(cv::Mat &depth_image);
+        void GenerateMeshGrid(const cv::Mat &xgv, const cv::Mat &ygv, cv::Mat &X, cv::Mat &Y);
+        void CreateSpatialKernel(const cv::Range &xgv, const cv::Range &ygv, cv::Mat &X, cv::Mat &Y);
+        void GaussianDistanceWeight(cv::Mat &X, cv::Mat &Y, cv::Mat &weight_d, const float sigma_d);
 
         struct RayCastingData
         {
@@ -42,8 +42,8 @@ namespace Kinfu
             cv::Mat bilateral_output;
         };
 
-        std::unique_ptr<RayCastingData> rayCastingData;
-        std::unique_ptr<DepthImage3dData> depthData;
+        std::unique_ptr<RayCastingData> ray_casting_data;
+        std::unique_ptr<DepthImage3dData> depth_data;
 
         const int WIDTH = 640;
         const int HEIGHT = 480;
