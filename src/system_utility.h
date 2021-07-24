@@ -15,6 +15,7 @@ namespace Kinfu
 
         void LoadDepthData(cv::Mat &depth_image, int frame_index);
         void GetRangeDepth(cv::Mat &depth_image);
+        void LoadColorData(cv::Mat &color_image, int frame_index);
         void GenerateMeshGrid(const cv::Mat &xgv, const cv::Mat &ygv, cv::Mat &X, cv::Mat &Y);
         void CreateSpatialKernel(const cv::Range &xgv, const cv::Range &ygv, cv::Mat &X, cv::Mat &Y);
         void GaussianDistanceWeight(cv::Mat &X, cv::Mat &Y, cv::Mat &weight_d, const float sigma_d);
@@ -42,11 +43,13 @@ namespace Kinfu
             cv::Mat bilateral_output;
         };
 
+        cv::Mat initial_depth_image;
+        cv::Mat color_image;
         std::unique_ptr<RayCastingData> ray_casting_data;
         std::unique_ptr<DepthImage3dData> depth_data;
 
-        const int WIDTH = 640;
-        const int HEIGHT = 480;
+        const int WIDTH{640};
+        const int HEIGHT{480};
 
     private:
     };

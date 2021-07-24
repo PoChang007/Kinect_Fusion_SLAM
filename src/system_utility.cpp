@@ -5,6 +5,9 @@ namespace Kinfu
 {
     SystemUtility::SystemUtility()
     {
+        initial_depth_image = cv::Mat::zeros(HEIGHT, WIDTH, CV_16UC1);
+        color_image = cv::Mat::zeros(HEIGHT, WIDTH, CV_8UC3);
+
         ray_casting_data = std::make_unique<RayCastingData>();
         ray_casting_data->surface_prediction_x = cv::Mat::zeros(HEIGHT, WIDTH, CV_32F);
         ray_casting_data->surface_prediction_y = cv::Mat::zeros(HEIGHT, WIDTH, CV_32F);
@@ -27,6 +30,9 @@ namespace Kinfu
 
     SystemUtility::~SystemUtility()
     {
+        initial_depth_image.release();
+        color_image.release();
+
         ray_casting_data->surface_prediction_x.release();
         ray_casting_data->surface_prediction_y.release();
         ray_casting_data->surface_prediction_z.release();
@@ -55,6 +61,13 @@ namespace Kinfu
 
         // convert to float type
         depth_image.convertTo(depth_image, CV_32F);
+    }
+
+    void SystemUtility::LoadColorData(cv::Mat &color_image, int frame_index)
+    {
+        char filename[200];
+        sprintf(filename, "../data/img%04d.jpg", frame_index);
+        color_image = cv::imread(filename);
     }
 
     void SystemUtility::GetRangeDepth(cv::Mat &depth_image)

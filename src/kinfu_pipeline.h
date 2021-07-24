@@ -8,10 +8,10 @@
 
 namespace Kinfu
 {
-    class KinfuPipeline
+    class KinfuPipeline : public std::enable_shared_from_this<Kinfu::KinfuPipeline>
     {
     public:
-        KinfuPipeline(int start_frame, int next_frame, int per_nth_frame, int end_frame);
+        KinfuPipeline();
         ~KinfuPipeline();
 
         cv::Mat intrinsic_matrix;
@@ -28,18 +28,19 @@ namespace Kinfu
         float *depth_Image_index_y;
         float *depth_Image_index_x;
 
-        void StartProcessing();
+        void InitialProcessing(int start_frame);
+        void IncomingFrameProcessing(int current_frame, int per_nth_frame);
+
+        std::shared_ptr<KinfuPipeline> get_shared_this() { return shared_from_this(); }
+        std::unique_ptr<SystemUtility> _system_utility;
 
     private:
-        // parameters for kinect fusion pipeline
-        int _start_frame;
-        int _next_frame;
-        int _per_nth_frame;
-        int _end_frame;
+        void CleanDepthData();
+        void CleanRayCastingData();
 
         // define voxel size
         const int _voxel_grid_x_start{-80};
-        const int _voxel_grid_y_start{-80};
+        const int _voxel_grid_y_start{-20};
         const int _voxel_grid_z_start{-30};
         const int _voxel_length{160};
         const int _voxel_width{250};
@@ -60,14 +61,10 @@ namespace Kinfu
         const float _sigma_d{4.5f};
         const float _sigma_r{30.f};
 
-        cv::Mat _initial_depth_image;
-
         // spatial Kernel
         cv::Mat _spatial_kernel_y;
         cv::Mat _spatial_kernel_x;
         cv::Mat _weight_d;
-
-        std::unique_ptr<SystemUtility> _system_utility;
     };
 }
 
