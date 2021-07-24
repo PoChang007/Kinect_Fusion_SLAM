@@ -80,7 +80,8 @@ __global__ void Voxel_Traversal(float *dev_surface_points_x, float *dev_surface_
                                 float *dev_voxel_grid_x, float *dev_voxel_grid_y,
                                 float *dev_voxel_grid_z, float *dev_global_tsdf,
                                 int voxel_length, int voxel_width, int voxel_height,
-                                float truncated_distance, float3 voxel_volume_min, float3 voxel_volume_max, float voxel_distance)
+                                float truncated_distance, float3 voxel_volume_min, float3 voxel_volume_max, float voxel_distance,
+                                const int HEIGHT, const int WIDTH)
 {
     const int x = blockDim.x * blockIdx.x + threadIdx.x;
     if (x >= WIDTH * HEIGHT)
@@ -422,7 +423,8 @@ __global__ void Voxel_Traversal(float *dev_surface_points_x, float *dev_surface_
     }
 }
 
-extern "C" void Ray_Casting(cv::Mat &surface_points_x_cv, cv::Mat &surface_points_y_cv, cv::Mat &surface_points_z_cv,
+extern "C" void Ray_Casting(const int HEIGHT, const int WIDTH, 
+                            cv::Mat &surface_points_x_cv, cv::Mat &surface_points_y_cv, cv::Mat &surface_points_z_cv,
                             cv::Mat &surface_normals_x_cv, cv::Mat &surface_normals_y_cv, cv::Mat &surface_normals_z_cv,
                             const float *voxel_grid_x, const float *voxel_grid_y, const float *voxel_grid_z,
                             const float *depth_image_coord_y_cv, const float *depth_image_coord_x_cv,
@@ -506,7 +508,8 @@ extern "C" void Ray_Casting(cv::Mat &surface_points_x_cv, cv::Mat &surface_point
                                                             dev_inv_cam_intrinsic, dev_inv_global_extrinsic, dev_vertices_z,
                                                             dev_voxel_grid_x, dev_voxel_grid_y, dev_voxel_grid_z, dev_global_tsdf,
                                                             voxel_length, voxel_width, voxel_height,
-                                                            truncated_distance, voxel_volume_min, voxel_volume_max, voxel_distance);
+                                                            truncated_distance, voxel_volume_min, voxel_volume_max, voxel_distance,
+                                                            HEIGHT, WIDTH);
     cudaDeviceSynchronize();
 
     // copy output vector from GPU buffer to host memory

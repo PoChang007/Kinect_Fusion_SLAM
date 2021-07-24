@@ -3,7 +3,8 @@
 __global__ void Calculate_Vertices_And_Normals(float *dev_vertices_z, float *dev_inv_cam_intrinsic,
 											  float *dev_vertices_x, float *dev_vertices_y,
 											  float *dev_normals_x, float *dev_normals_y, float *dev_normals_z,
-											  uint8_t *dev_vertex_mask, float *dev_depth_image_coord_y, float *dev_depth_image_coord_x)
+											  uint8_t *dev_vertex_mask, float *dev_depth_image_coord_y, float *dev_depth_image_coord_x,
+											  const int HEIGHT, const int WIDTH)
 {
 	const int x = blockDim.x * blockIdx.x + threadIdx.x;
 	if (x >= WIDTH * HEIGHT)
@@ -49,7 +50,8 @@ __global__ void Calculate_Vertices_And_Normals(float *dev_vertices_z, float *dev
 	}
 }
 
-extern "C" void Calculate_Vertices_And_Normals(cv::Mat &vertices_z_cv, cv::Mat &cam_intrinsic_cv,
+extern "C" void Calculate_Vertices_And_Normals(const int HEIGHT, int WIDTH, 
+	 										   cv::Mat &vertices_z_cv, cv::Mat &cam_intrinsic_cv,
 											   cv::Mat &vertices_x_cv, cv::Mat &vertices_y_cv,
 											   cv::Mat &normals_x_cv, cv::Mat &normals_y_cv, cv::Mat &normals_z_cv,
 											   cv::Mat &vertex_mask, const float *depth_image_coord_y, const float *depth_image_coord_x)
@@ -97,7 +99,8 @@ extern "C" void Calculate_Vertices_And_Normals(cv::Mat &vertices_z_cv, cv::Mat &
 	Calculate_Vertices_And_Normals<<<blocks_per_grid, threads_per_block>>>(dev_vertices_z, dev_inv_cam_intrinsic,
 																		  dev_vertices_x, dev_vertices_y,
 																		  dev_normals_x, dev_normals_y, dev_normals_z,
-																		  dev_vertex_mask, dev_depth_image_coord_y, dev_depth_image_coord_x);
+																		  dev_vertex_mask, dev_depth_image_coord_y, dev_depth_image_coord_x,
+																		  HEIGHT, WIDTH);
 	cudaDeviceSynchronize();
 
 	// copy output vector from gpu buffer to host memory

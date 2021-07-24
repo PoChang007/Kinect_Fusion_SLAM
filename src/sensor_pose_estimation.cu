@@ -10,7 +10,8 @@ __global__ void ICP(float *dev_vertices_x, float *dev_vertices_y, float *dev_ver
 					float *dev_surface_normals_x, float *dev_surface_normals_y, float *dev_surface_normals_z,
 					float *dev_inv_cam_intrinsic, float *dev_inv_global_extrinsic,
 					float *dev_refinement_6dof_trans, float *dev_frame_to_frame_trans,
-					float *dev_linear_system_right_matrix, float *dev_linear_system_left_matrix, uint8_t *dev_vertex_mask)
+					float *dev_linear_system_right_matrix, float *dev_linear_system_left_matrix, uint8_t *dev_vertex_mask,
+					const int HEIGHT, const int WIDTH)
 {
 	const int x = blockDim.x * blockIdx.x + threadIdx.x;
 	if (x >= WIDTH * HEIGHT)
@@ -221,7 +222,7 @@ void Solve_Linear_System(float *linear_system_left_sum, float *linear_system_rig
 	delete[] lower_triangle_vector;
 }
 
-__global__ void Sum_Array(float *g_idata, float *g_odata, int k)
+__global__ void Sum_Array(float *g_idata, float *g_odata, int k, const int HEIGHT, const int WIDTH)
 {
 	extern __shared__ float sdata[64];
 
@@ -243,7 +244,8 @@ __global__ void Sum_Array(float *g_idata, float *g_odata, int k)
 		g_odata[blockIdx.x] = sdata[0];
 }
 
-extern "C" void Estimate_Sensor_Pose(const cv::Mat &cam_intrinsic_cv, cv::Mat &global_extrinsic_cv,
+extern "C" void Estimate_Sensor_Pose(const int HEIGHT, const int WIDTH, 
+									 const cv::Mat &cam_intrinsic_cv, cv::Mat &global_extrinsic_cv,
 									 cv::Mat &vertices_x_cv, cv::Mat &vertices_y_cv, cv::Mat &vertices_z_cv,
 									 cv::Mat &normals_x_cv, cv::Mat &normals_y_cv, cv::Mat &normals_z_cv,
 									 cv::Mat &surface_points_x_cv, cv::Mat &surface_points_y_cv, cv::Mat &surface_points_z_cv,
@@ -349,7 +351,8 @@ extern "C" void Estimate_Sensor_Pose(const cv::Mat &cam_intrinsic_cv, cv::Mat &g
 													dev_surface_points_x, dev_surface_points_y, dev_surface_points_z,
 													dev_surface_normals_x, dev_surface_normals_y, dev_surface_normals_z,
 													dev_cam_intrinsic, dev_inv_global_extrinsic, dev_refinement_6dof_trans, dev_frame_to_frame_trans,
-													dev_linear_system_right_matrix, dev_linear_system_left_matrix, dev_vertex_mask);
+													dev_linear_system_right_matrix, dev_linear_system_left_matrix, dev_vertex_mask,
+													HEIGHT, WIDTH);
 		cudaDeviceSynchronize();
 
 		float *linear_system_right_sum = new float[SIZE_6];
@@ -359,7 +362,7 @@ extern "C" void Estimate_Sensor_Pose(const cv::Mat &cam_intrinsic_cv, cv::Mat &g
 
 		for (int k = 0; k < SIZE_6; k++)
 		{
-			Sum_Array<<<blocks_per_grid, threads_per_block>>>(dev_linear_system_right_matrix, dev_block_cumulative_sum, k);
+			Sum_Array<<<blocks_per_grid, threads_per_block>>>(dev_linear_system_right_matrix, dev_block_cumulative_sum, k, HEIGHT, WIDTH);
 			cudaDeviceSynchronize();
 			// copy output vector from GPU buffer to host memory
 			cudaMemcpy(block_cumulative_sum, dev_block_cumulative_sum, blocks_per_grid * sizeof(float), cudaMemcpyDeviceToHost);
@@ -372,7 +375,7 @@ extern "C" void Estimate_Sensor_Pose(const cv::Mat &cam_intrinsic_cv, cv::Mat &g
 		}
 		for (int k = 0; k < SIZE_36; k++)
 		{
-			Sum_Array<<<blocks_per_grid, threads_per_block>>>(dev_linear_system_left_matrix, dev_block_cumulative_sum, k);
+			Sum_Array<<<blocks_per_grid, threads_per_block>>>(dev_linear_system_left_matrix, dev_block_cumulative_sum, k, HEIGHT, WIDTH);
 			cudaDeviceSynchronize();
 			cudaMemcpy(block_cumulative_sum, dev_block_cumulative_sum, blocks_per_grid * sizeof(float), cudaMemcpyDeviceToHost);
 			for (int i = 0; i < blocks_per_grid; i++)

@@ -7,7 +7,8 @@ __global__ void Projective_TSDF(float *dev_cam_intrinsic, float *dev_global_extr
                                 float *dev_voxel_grid_x, float *dev_voxel_grid_y, float *dev_voxel_grid_z,
                                 float *dev_global_tsdf, float *dev_global_weight_tsdf,
                                 float truncated_distance, float sdf_minimum, float sdf_maximum, bool initial_tsdf_construct,
-                                float voxel_length, float voxel_width, float voxel_height)
+                                float voxel_length, float voxel_width, float voxel_height,
+                                const int HEIGHT, const int WIDTH)
 {
     const int x = blockDim.x * blockIdx.x + threadIdx.x;
     if (x >= voxel_length * voxel_width * voxel_height)
@@ -94,7 +95,8 @@ __global__ void Projective_TSDF(float *dev_cam_intrinsic, float *dev_global_extr
     }
 }
 
-extern "C" void Projective_TSDF(const float *voxel_grid_x, const float *voxel_grid_y, const float *voxel_grid_z,
+extern "C" void Projective_TSDF(const int HEIGHT, const int WIDTH, 
+                                const float *voxel_grid_x, const float *voxel_grid_y, const float *voxel_grid_z,
                                 const cv::Mat &cam_intrinsic_cv, cv::Mat &global_extrinsic_cv, float *global_tsdf, float *global_weight_tsdf,
                                 cv::Mat &vertices_z_cv, const float truncated_distance, const float sdf_minimum, const float sdf_maximum,
                                 const int voxel_length, const int voxel_width, const int voxel_height, bool initial_tsdf_construct)
@@ -145,7 +147,8 @@ extern "C" void Projective_TSDF(const float *voxel_grid_x, const float *voxel_gr
                                                             dev_voxel_grid_x, dev_voxel_grid_y, dev_voxel_grid_z,
                                                             dev_global_tsdf, dev_global_weight_tsdf,
                                                             truncated_distance, sdf_minimum, sdf_maximum, initial_tsdf_construct,
-                                                            voxel_length, voxel_width, voxel_height);
+                                                            voxel_length, voxel_width, voxel_height,
+                                                            HEIGHT, WIDTH);
     cudaDeviceSynchronize();
 
     // copy output vector from GPU buffer to host memory.

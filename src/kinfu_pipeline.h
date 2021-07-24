@@ -11,7 +11,7 @@ namespace Kinfu
     class KinfuPipeline : public std::enable_shared_from_this<Kinfu::KinfuPipeline>
     {
     public:
-        KinfuPipeline();
+        KinfuPipeline(int height, int width);
         ~KinfuPipeline();
 
         cv::Mat intrinsic_matrix;
