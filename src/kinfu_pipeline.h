@@ -32,7 +32,7 @@ namespace Kinfu
         void IncomingFrameProcessing(int current_frame, int per_nth_frame);
 
         std::shared_ptr<KinfuPipeline> get_shared_this() { return shared_from_this(); }
-        std::unique_ptr<SystemUtility> _system_utility;
+        std::unique_ptr<SystemUtility> system_utility;
 
     private:
         void CleanDepthData();
