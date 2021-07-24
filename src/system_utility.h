@@ -47,7 +47,7 @@ namespace Kinfu
         cv::Mat color_image;
         std::unique_ptr<RayCastingData> ray_casting_data;
         std::unique_ptr<DepthImage3dData> depth_data;
-        
+
         int GetImageHeight() const
         {
             return _height;

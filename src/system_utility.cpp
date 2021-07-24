@@ -6,7 +6,7 @@ namespace Kinfu
     SystemUtility::SystemUtility(int height, int width)
     {
         _height = height;
-        _width = width;        
+        _width = width;
         initial_depth_image = cv::Mat::zeros(_height, _width, CV_16UC1);
         color_image = cv::Mat::zeros(_height, _width, CV_8UC3);
 

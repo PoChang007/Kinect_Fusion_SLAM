@@ -14,7 +14,7 @@ int main()
     int per_nth_frame = 3;
     int per_nth_render_frame = 5;
     bool firstFrameRender = false;
-    
+
     std::shared_ptr<Kinfu::KinfuPipeline> kinectFusionSystem = std::make_shared<Kinfu::KinfuPipeline>(height, width);
     std::unique_ptr<ThreeDViewer> pclRender = std::make_unique<ThreeDViewer>(kinectFusionSystem->get_shared_this());
 
