@@ -10,7 +10,7 @@ namespace Kinfu
     class SystemUtility
     {
     public:
-        SystemUtility();
+        SystemUtility(int height, int width);
         ~SystemUtility();
 
         void LoadDepthData(cv::Mat &depth_image, int frame_index);
@@ -48,10 +48,19 @@ namespace Kinfu
         std::unique_ptr<RayCastingData> ray_casting_data;
         std::unique_ptr<DepthImage3dData> depth_data;
 
-        const int WIDTH{640};
-        const int HEIGHT{480};
+        int GetImageHeight() const
+        {
+            return _height;
+        }
+
+        int GetImageWidth() const
+        {
+            return _width;
+        }
 
     private:
+        int _height{0};
+        int _width{0};
     };
 }
 

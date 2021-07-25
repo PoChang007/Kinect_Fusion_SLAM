@@ -3,22 +3,26 @@
 
 int main()
 {
+    // image size
+    int height = 480;
+    int width = 640;
+
     // frame settings
-    int start_frame = 20;
-    int end_frame = 100;
+    int start_frame = 25;
+    int end_frame = 300;
     int current_frame = start_frame;
-    int per_nth_frame = 3;
+    int per_nth_frame = 1;
     int per_nth_render_frame = 5;
     bool firstFrameRender = false;
 
-    std::shared_ptr<Kinfu::KinfuPipeline> kinectFusionSystem = std::make_shared<Kinfu::KinfuPipeline>();
+    std::shared_ptr<Kinfu::KinfuPipeline> kinectFusionSystem = std::make_shared<Kinfu::KinfuPipeline>(height, width);
     std::unique_ptr<ThreeDViewer> pclRender = std::make_unique<ThreeDViewer>(kinectFusionSystem->get_shared_this());
 
     pcl::visualization::PCLVisualizer::Ptr viewer(new pcl::visualization::PCLVisualizer("3D Viewer"));
     viewer->setBackgroundColor(0, 0, 0);
     viewer->initCameraParameters();
     // viewer->registerKeyboardCallback(KeyboardEvent);
-    viewer->setCameraPosition(0, 0, -8, 0, 0, 0.1, 0, -1, 0);
+    viewer->setCameraPosition(0, 0, -10, 0, 0, 0, 0, -1, 0);
 
     while (!viewer->wasStopped())
     {
@@ -47,6 +51,6 @@ int main()
         viewer->spinOnce(100);
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
-    
+
     return 0;
 }

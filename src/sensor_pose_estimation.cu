@@ -10,7 +10,8 @@ __global__ void ICP(float *dev_vertices_x, float *dev_vertices_y, float *dev_ver
 					float *dev_surface_normals_x, float *dev_surface_normals_y, float *dev_surface_normals_z,
 					float *dev_inv_cam_intrinsic, float *dev_inv_global_extrinsic,
 					float *dev_refinement_6dof_trans, float *dev_frame_to_frame_trans,
-					float *dev_linear_system_right_matrix, float *dev_linear_system_left_matrix, uint8_t *dev_vertex_mask)
+					float *dev_linear_system_right_matrix, float *dev_linear_system_left_matrix, uint8_t *dev_vertex_mask,
+					const int HEIGHT, const int WIDTH)
 {
 	const int x = blockDim.x * blockIdx.x + threadIdx.x;
 	if (x >= WIDTH * HEIGHT)
@@ -33,7 +34,7 @@ __global__ void ICP(float *dev_vertices_x, float *dev_vertices_y, float *dev_ver
 		{
 			if (local_projected_pixel_v > 0 && local_projected_pixel_v <= HEIGHT)
 			{
-				// T^ Z(g, k)* Vk
+				// T^Z(g, k) * Vk
 				// Update vertex for the next round of ICP
 				float update_vertex_x = dev_refinement_6dof_trans[0] * dev_vertices_x[x] + dev_refinement_6dof_trans[1] * dev_vertices_y[x] + dev_refinement_6dof_trans[2] * dev_vertices_z[x] + dev_refinement_6dof_trans[3];
 				float update_vertex_y = dev_refinement_6dof_trans[4] * dev_vertices_x[x] + dev_refinement_6dof_trans[5] * dev_vertices_y[x] + dev_refinement_6dof_trans[6] * dev_vertices_z[x] + dev_refinement_6dof_trans[7];
@@ -44,9 +45,9 @@ __global__ void ICP(float *dev_vertices_x, float *dev_vertices_y, float *dev_ver
 														 update_vertex_y - dev_surface_points_y[projected_index],
 														 update_vertex_z - dev_surface_points_z[projected_index]);
 				float distance = sqrtf(distance_difference.x * distance_difference.x + distance_difference.y * distance_difference.y + distance_difference.z * distance_difference.z);
-				if (distance < 20.0f /* && distance > 0.000001f */)
+				if (distance <= 20.0f && distance >= 0.0f)
 				{
-					// R^ Z(g, k)* Nk
+					// R^Z(g, k) * Nk
 					// update normal vector
 					float3 update_normal = make_float3(dev_refinement_6dof_trans[0] * dev_normals_x[x] + dev_refinement_6dof_trans[1] * dev_normals_y[x] + dev_refinement_6dof_trans[2] * dev_normals_z[x],
 													   dev_refinement_6dof_trans[4] * dev_normals_x[x] + dev_refinement_6dof_trans[5] * dev_normals_y[x] + dev_refinement_6dof_trans[6] * dev_normals_z[x],
@@ -57,15 +58,15 @@ __global__ void ICP(float *dev_vertices_x, float *dev_vertices_y, float *dev_ver
 												  dev_surface_normals_y[projected_index],
 												  dev_surface_normals_z[projected_index]);
 
-					float dot_product = abs(update_normal.x * vector_a.x + update_normal.y * vector_a.y + update_normal.z * vector_a.z);
-					float cos_theta = dot_product / (sqrtf(update_normal.x * update_normal.x + update_normal.y * update_normal.y + update_normal.z * update_normal.z) *
-													 sqrtf(vector_a.x * vector_a.x + vector_a.y * vector_a.y + vector_a.z * vector_a.z));
+					Get_Normalized(vector_a);
+
+					float cos_theta = (update_normal.x * vector_a.x + update_normal.y * vector_a.y + update_normal.z * vector_a.z);
 					float normal_angle = acos(cos_theta) * (180.0f / CUDART_PI_F);
 
 					if (normal_angle < 0)
 						printf("negative angle \n");
 
-					if (normal_angle < 30.0f /* && normal_angle > 0.000001f */)
+					if (normal_angle <= 30.0f && normal_angle >= 0.0f)
 					{
 						// solve 6X6 linear sysem
 						float a_transpose_1 = update_vertex_z * dev_surface_normals_y[projected_index] + (-update_vertex_y * dev_surface_normals_z[projected_index]);
@@ -208,7 +209,7 @@ void Solve_Linear_System(float *linear_system_left_sum, float *linear_system_rig
 	memcpy(lower_triangle_matrix_cv.data, lower_triangle_vector, 6 * 6 * sizeof(float));
 	// get a
 	cv::transpose(lower_triangle_matrix_cv, upper_triangle_matrix_cv);
-	;
+
 	cv::Mat rightside_vector_cv(6, 1, CV_32F);
 	memcpy(linear_system_right_sum_cv.data, linear_system_right_sum, 6 * sizeof(float));
 	// solve B = a'b, get b
@@ -221,7 +222,7 @@ void Solve_Linear_System(float *linear_system_left_sum, float *linear_system_rig
 	delete[] lower_triangle_vector;
 }
 
-__global__ void Sum_Array(float *g_idata, float *g_odata, int k)
+__global__ void Sum_Array(float *g_idata, float *g_odata, int k, const int HEIGHT, const int WIDTH)
 {
 	extern __shared__ float sdata[64];
 
@@ -243,7 +244,8 @@ __global__ void Sum_Array(float *g_idata, float *g_odata, int k)
 		g_odata[blockIdx.x] = sdata[0];
 }
 
-extern "C" void Estimate_Sensor_Pose(const cv::Mat &cam_intrinsic_cv, cv::Mat &global_extrinsic_cv,
+extern "C" void Estimate_Sensor_Pose(const int HEIGHT, const int WIDTH,
+									 const cv::Mat &cam_intrinsic_cv, cv::Mat &global_extrinsic_cv,
 									 cv::Mat &vertices_x_cv, cv::Mat &vertices_y_cv, cv::Mat &vertices_z_cv,
 									 cv::Mat &normals_x_cv, cv::Mat &normals_y_cv, cv::Mat &normals_z_cv,
 									 cv::Mat &surface_points_x_cv, cv::Mat &surface_points_y_cv, cv::Mat &surface_points_z_cv,
@@ -349,7 +351,8 @@ extern "C" void Estimate_Sensor_Pose(const cv::Mat &cam_intrinsic_cv, cv::Mat &g
 													dev_surface_points_x, dev_surface_points_y, dev_surface_points_z,
 													dev_surface_normals_x, dev_surface_normals_y, dev_surface_normals_z,
 													dev_cam_intrinsic, dev_inv_global_extrinsic, dev_refinement_6dof_trans, dev_frame_to_frame_trans,
-													dev_linear_system_right_matrix, dev_linear_system_left_matrix, dev_vertex_mask);
+													dev_linear_system_right_matrix, dev_linear_system_left_matrix, dev_vertex_mask,
+													HEIGHT, WIDTH);
 		cudaDeviceSynchronize();
 
 		float *linear_system_right_sum = new float[SIZE_6];
@@ -359,7 +362,7 @@ extern "C" void Estimate_Sensor_Pose(const cv::Mat &cam_intrinsic_cv, cv::Mat &g
 
 		for (int k = 0; k < SIZE_6; k++)
 		{
-			Sum_Array<<<blocks_per_grid, threads_per_block>>>(dev_linear_system_right_matrix, dev_block_cumulative_sum, k);
+			Sum_Array<<<blocks_per_grid, threads_per_block>>>(dev_linear_system_right_matrix, dev_block_cumulative_sum, k, HEIGHT, WIDTH);
 			cudaDeviceSynchronize();
 			// copy output vector from GPU buffer to host memory
 			cudaMemcpy(block_cumulative_sum, dev_block_cumulative_sum, blocks_per_grid * sizeof(float), cudaMemcpyDeviceToHost);
@@ -372,7 +375,7 @@ extern "C" void Estimate_Sensor_Pose(const cv::Mat &cam_intrinsic_cv, cv::Mat &g
 		}
 		for (int k = 0; k < SIZE_36; k++)
 		{
-			Sum_Array<<<blocks_per_grid, threads_per_block>>>(dev_linear_system_left_matrix, dev_block_cumulative_sum, k);
+			Sum_Array<<<blocks_per_grid, threads_per_block>>>(dev_linear_system_left_matrix, dev_block_cumulative_sum, k, HEIGHT, WIDTH);
 			cudaDeviceSynchronize();
 			cudaMemcpy(block_cumulative_sum, dev_block_cumulative_sum, blocks_per_grid * sizeof(float), cudaMemcpyDeviceToHost);
 			for (int i = 0; i < blocks_per_grid; i++)
@@ -424,7 +427,7 @@ extern "C" void Estimate_Sensor_Pose(const cv::Mat &cam_intrinsic_cv, cv::Mat &g
 		// update transform
 		refinement_6dof_trans_cv = sixdof_increment_cv * refinement_6dof_trans_cv;
 		global_extrinsic_cv = refinement_6dof_trans_cv;
-		
+
 		// clean all values for the next run of icp
 		delete[] linear_system_right_sum;
 		delete[] linear_system_left_sum;

@@ -1,8 +1,9 @@
 #include "kinfu_pipeline.h"
 
 __global__ void Bilateral_Filtering(float *dev_depth_Image_array, float *dev_bilateral_output_array,
-								 float *dev_spatial_kernel_array, float *dev_depth_Image_index_y, float *dev_depth_Image_index_x,
-								 const int bw_radius, const float sigma_r)
+									float *dev_spatial_kernel_array, float *dev_depth_Image_index_y, float *dev_depth_Image_index_x,
+									const int bw_radius, const float sigma_r,
+									const int HEIGHT, const int WIDTH)
 {
 	const int x = blockDim.x * blockIdx.x + threadIdx.x;
 	if (x >= WIDTH * HEIGHT)
@@ -46,7 +47,8 @@ __global__ void Bilateral_Filtering(float *dev_depth_Image_array, float *dev_bil
 	}
 }
 
-extern "C" void Bilateral_Filtering(cv::Mat &depth_Image, cv::Mat &bilateral_output,
+extern "C" void Bilateral_Filtering(const int HEIGHT, const int WIDTH,
+									cv::Mat &depth_Image, cv::Mat &bilateral_output,
 									cv::Mat &spatial_kernel, const float *depth_Image_index_y, const float *depth_Image_index_x,
 									const int bw_radius, const float sigma_r)
 {
@@ -83,8 +85,9 @@ extern "C" void Bilateral_Filtering(cv::Mat &depth_Image, cv::Mat &bilateral_out
 
 	// add kernel here
 	Bilateral_Filtering<<<blocksPerGrid, threadsPerBlock>>>(dev_depth_Image_array, dev_bilateral_output_array,
-														 dev_spatial_kernel_array, dev_depth_Image_index_y, dev_depth_Image_index_x,
-														 bw_radius, sigma_r);
+															dev_spatial_kernel_array, dev_depth_Image_index_y, dev_depth_Image_index_x,
+															bw_radius, sigma_r,
+															HEIGHT, WIDTH);
 	cudaDeviceSynchronize();
 
 	// copy output vector from GPU buffer to host memory.

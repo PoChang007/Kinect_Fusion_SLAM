@@ -2,9 +2,9 @@
 
 namespace Kinfu
 {
-    KinfuPipeline::KinfuPipeline()
+    KinfuPipeline::KinfuPipeline(int height, int width)
     {
-        _system_utility = std::make_unique<SystemUtility>();
+        system_utility = std::make_unique<SystemUtility>(height, width);
 
         intrinsic_matrix = cv::Mat::zeros(3, 3, CV_32F);
         extrinsic_matrix = cv::Mat::eye(4, 4, CV_32F);
@@ -23,14 +23,14 @@ namespace Kinfu
         intrinsic_matrix.ptr<float>(2)[2] = 1.0f;
 
         // initialize image index matrices
-        depth_Image_index_y = new float[WIDTH * HEIGHT];
-        depth_Image_index_x = new float[WIDTH * HEIGHT];
-        for (int y = 0; y < HEIGHT; y++)
+        depth_Image_index_y = new float[width * height];
+        depth_Image_index_x = new float[width * height];
+        for (int y = 0; y < height; y++)
         {
-            for (int x = 0; x < WIDTH; x++)
+            for (int x = 0; x < width; x++)
             {
-                depth_Image_index_y[y * WIDTH + x] = (float)y;
-                depth_Image_index_x[y * WIDTH + x] = (float)x;
+                depth_Image_index_y[y * width + x] = (float)y;
+                depth_Image_index_x[y * width + x] = (float)x;
             }
         }
 
@@ -82,93 +82,100 @@ namespace Kinfu
 
     void KinfuPipeline::InitialProcessing(int start_frame)
     {
-        _system_utility->LoadDepthData(_system_utility->initial_depth_image, start_frame);
-        _system_utility->GetRangeDepth(_system_utility->initial_depth_image);
-        _system_utility->LoadColorData(_system_utility->color_image, start_frame);
+        system_utility->LoadDepthData(system_utility->initial_depth_image, start_frame);
+        system_utility->GetRangeDepth(system_utility->initial_depth_image);
+        system_utility->LoadColorData(system_utility->color_image, start_frame);
 
-        Projective_TSDF(voxel_grid_x, voxel_grid_y, voxel_grid_z, intrinsic_matrix, extrinsic_matrix,
-                        global_tsdf, global_weight_tsdf, _system_utility->initial_depth_image,
+        Projective_TSDF(system_utility->GetImageHeight(), system_utility->GetImageWidth(),
+                        voxel_grid_x, voxel_grid_y, voxel_grid_z, intrinsic_matrix, extrinsic_matrix,
+                        global_tsdf, global_weight_tsdf, system_utility->initial_depth_image,
                         _truncated_distance, _sdf_minimum, _sdf_maximum,
                         _voxel_length, _voxel_width, _voxel_height, true);
 
-        Ray_Casting(_system_utility->ray_casting_data->surface_prediction_x,
-                    _system_utility->ray_casting_data->surface_prediction_y,
-                    _system_utility->ray_casting_data->surface_prediction_z,
-                    _system_utility->ray_casting_data->surface_prediction_normal_x,
-                    _system_utility->ray_casting_data->surface_prediction_normal_y,
-                    _system_utility->ray_casting_data->surface_prediction_normal_z,
+        Ray_Casting(system_utility->GetImageHeight(), system_utility->GetImageWidth(),
+                    system_utility->ray_casting_data->surface_prediction_x,
+                    system_utility->ray_casting_data->surface_prediction_y,
+                    system_utility->ray_casting_data->surface_prediction_z,
+                    system_utility->ray_casting_data->surface_prediction_normal_x,
+                    system_utility->ray_casting_data->surface_prediction_normal_y,
+                    system_utility->ray_casting_data->surface_prediction_normal_z,
                     voxel_grid_x, voxel_grid_y, voxel_grid_z,
                     depth_Image_index_y, depth_Image_index_x,
-                    intrinsic_matrix, extrinsic_matrix, global_tsdf, _system_utility->initial_depth_image,
-                    _system_utility->ray_casting_data->traversal_recording, _truncated_distance,
+                    intrinsic_matrix, extrinsic_matrix, global_tsdf, system_utility->initial_depth_image,
+                    system_utility->ray_casting_data->traversal_recording, _truncated_distance,
                     _voxel_length, _voxel_width, _voxel_height,
                     _voxel_grid_x_start, _voxel_grid_y_start, _voxel_grid_z_start, _voxel_distance);
 
-        _system_utility->CreateSpatialKernel(cv::Range(-_bw_radius, _bw_radius), cv::Range(-_bw_radius, _bw_radius), _spatial_kernel_y, _spatial_kernel_x);
-        _system_utility->GaussianDistanceWeight(_spatial_kernel_y, _spatial_kernel_x, _weight_d, _sigma_d);
+        system_utility->CreateSpatialKernel(cv::Range(-_bw_radius, _bw_radius), cv::Range(-_bw_radius, _bw_radius), _spatial_kernel_y, _spatial_kernel_x);
+        system_utility->GaussianDistanceWeight(_spatial_kernel_y, _spatial_kernel_x, _weight_d, _sigma_d);
     }
 
     void KinfuPipeline::IncomingFrameProcessing(int current_frame, int per_nth_frame)
     {
         auto start = std::chrono::high_resolution_clock::now();
 
-        _system_utility->depth_data->depth_image_next.convertTo(_system_utility->depth_data->depth_image_next, CV_16UC1);
+        system_utility->depth_data->depth_image_next.convertTo(system_utility->depth_data->depth_image_next, CV_16UC1);
         CleanDepthData();
 
-        _system_utility->LoadDepthData(_system_utility->depth_data->depth_image_next, current_frame);
-        _system_utility->GetRangeDepth(_system_utility->depth_data->depth_image_next);
-        _system_utility->LoadColorData(_system_utility->color_image, current_frame);
-        Calculate_Vertices_And_Normals(_system_utility->depth_data->depth_image_next, intrinsic_matrix,
-                                       _system_utility->depth_data->raw_vertices_x,
-                                       _system_utility->depth_data->raw_vertices_y,
-                                       _system_utility->depth_data->raw_normal_x,
-                                       _system_utility->depth_data->raw_normal_y,
-                                       _system_utility->depth_data->raw_normal_z,
-                                       _system_utility->depth_data->vertex_mask,
+        system_utility->LoadDepthData(system_utility->depth_data->depth_image_next, current_frame);
+        system_utility->GetRangeDepth(system_utility->depth_data->depth_image_next);
+        system_utility->LoadColorData(system_utility->color_image, current_frame);
+        Calculate_Vertices_And_Normals(system_utility->GetImageHeight(), system_utility->GetImageWidth(),
+                                       system_utility->depth_data->depth_image_next, intrinsic_matrix,
+                                       system_utility->depth_data->raw_vertices_x,
+                                       system_utility->depth_data->raw_vertices_y,
+                                       system_utility->depth_data->raw_normal_x,
+                                       system_utility->depth_data->raw_normal_y,
+                                       system_utility->depth_data->raw_normal_z,
+                                       system_utility->depth_data->vertex_mask,
                                        depth_Image_index_y, depth_Image_index_x);
 
-        // Bilateral_Filtering(_system_utility->depth_data->depth_image_next,
-        //                     _system_utility->depth_data->bilateral_output,
+        // Bilateral_Filtering(system_utility->GetImageHeight(), system_utility->GetImageWidth(),
+        //                     system_utility->depth_data->depth_image_next,
+        //                     system_utility->depth_data->bilateral_output,
         //                     _weight_d, depth_Image_index_y, depth_Image_index_x,
-        // 	                _bw_radius, _sigma_r);
+        //                     _bw_radius, _sigma_r);
 
-        Estimate_Sensor_Pose(intrinsic_matrix, extrinsic_matrix,
-                             _system_utility->depth_data->raw_vertices_x,
-                             _system_utility->depth_data->raw_vertices_y,
-                             _system_utility->depth_data->depth_image_next,
-                             _system_utility->depth_data->raw_normal_x,
-                             _system_utility->depth_data->raw_normal_y,
-                             _system_utility->depth_data->raw_normal_z,
-                             _system_utility->ray_casting_data->surface_prediction_x,
-                             _system_utility->ray_casting_data->surface_prediction_y,
-                             _system_utility->ray_casting_data->surface_prediction_z,
-                             _system_utility->ray_casting_data->surface_prediction_normal_x,
-                             _system_utility->ray_casting_data->surface_prediction_normal_y,
-                             _system_utility->ray_casting_data->surface_prediction_normal_z,
-                             _system_utility->depth_data->vertex_mask);
+        Estimate_Sensor_Pose(system_utility->GetImageHeight(), system_utility->GetImageWidth(),
+                             intrinsic_matrix, extrinsic_matrix,
+                             system_utility->depth_data->raw_vertices_x,
+                             system_utility->depth_data->raw_vertices_y,
+                             system_utility->depth_data->depth_image_next,
+                             system_utility->depth_data->raw_normal_x,
+                             system_utility->depth_data->raw_normal_y,
+                             system_utility->depth_data->raw_normal_z,
+                             system_utility->ray_casting_data->surface_prediction_x,
+                             system_utility->ray_casting_data->surface_prediction_y,
+                             system_utility->ray_casting_data->surface_prediction_z,
+                             system_utility->ray_casting_data->surface_prediction_normal_x,
+                             system_utility->ray_casting_data->surface_prediction_normal_y,
+                             system_utility->ray_casting_data->surface_prediction_normal_z,
+                             system_utility->depth_data->vertex_mask);
 
-        printf("frame %d\n", current_frame);
-        printf("03 %f\n", extrinsic_matrix.ptr<float>(0)[3]);
-        printf("13 %f\n", extrinsic_matrix.ptr<float>(1)[3]);
-        printf("23 %f\n", extrinsic_matrix.ptr<float>(2)[3]);
+        std::cout << "frame " << current_frame << std::endl;
+        std::cout << "Position x " << extrinsic_matrix.ptr<float>(0)[3] << std::endl;
+        std::cout << "Position y " << extrinsic_matrix.ptr<float>(1)[3] << std::endl;
+        std::cout << "Position z " << extrinsic_matrix.ptr<float>(2)[3] << std::endl;
 
-        Projective_TSDF(voxel_grid_x, voxel_grid_y, voxel_grid_z, intrinsic_matrix, extrinsic_matrix,
+        Projective_TSDF(system_utility->GetImageHeight(), system_utility->GetImageWidth(),
+                        voxel_grid_x, voxel_grid_y, voxel_grid_z, intrinsic_matrix, extrinsic_matrix,
                         global_tsdf, global_weight_tsdf,
-                        _system_utility->depth_data->depth_image_next, _truncated_distance, _sdf_minimum, _sdf_maximum,
+                        system_utility->depth_data->depth_image_next, _truncated_distance, _sdf_minimum, _sdf_maximum,
                         _voxel_length, _voxel_width, _voxel_height, false);
 
         CleanRayCastingData();
 
-        Ray_Casting(_system_utility->ray_casting_data->surface_prediction_x,
-                    _system_utility->ray_casting_data->surface_prediction_y,
-                    _system_utility->ray_casting_data->surface_prediction_z,
-                    _system_utility->ray_casting_data->surface_prediction_normal_x,
-                    _system_utility->ray_casting_data->surface_prediction_normal_y,
-                    _system_utility->ray_casting_data->surface_prediction_normal_z,
+        Ray_Casting(system_utility->GetImageHeight(), system_utility->GetImageWidth(),
+                    system_utility->ray_casting_data->surface_prediction_x,
+                    system_utility->ray_casting_data->surface_prediction_y,
+                    system_utility->ray_casting_data->surface_prediction_z,
+                    system_utility->ray_casting_data->surface_prediction_normal_x,
+                    system_utility->ray_casting_data->surface_prediction_normal_y,
+                    system_utility->ray_casting_data->surface_prediction_normal_z,
                     voxel_grid_x, voxel_grid_y, voxel_grid_z,
                     depth_Image_index_y, depth_Image_index_x,
-                    intrinsic_matrix, extrinsic_matrix, global_tsdf, _system_utility->depth_data->depth_image_next,
-                    _system_utility->ray_casting_data->traversal_recording, _truncated_distance,
+                    intrinsic_matrix, extrinsic_matrix, global_tsdf, system_utility->depth_data->depth_image_next,
+                    system_utility->ray_casting_data->traversal_recording, _truncated_distance,
                     _voxel_length, _voxel_width, _voxel_height,
                     _voxel_grid_x_start, _voxel_grid_y_start, _voxel_grid_z_start, _voxel_distance);
 
@@ -180,24 +187,24 @@ namespace Kinfu
 
     void KinfuPipeline::CleanRayCastingData()
     {
-        _system_utility->ray_casting_data->surface_prediction_x = cv::Mat::zeros(HEIGHT, WIDTH, CV_32F);
-        _system_utility->ray_casting_data->surface_prediction_y = cv::Mat::zeros(HEIGHT, WIDTH, CV_32F);
-        _system_utility->ray_casting_data->surface_prediction_z = cv::Mat::zeros(HEIGHT, WIDTH, CV_32F);
-        _system_utility->ray_casting_data->surface_prediction_normal_x = cv::Mat::zeros(HEIGHT, WIDTH, CV_32F);
-        _system_utility->ray_casting_data->surface_prediction_normal_y = cv::Mat::zeros(HEIGHT, WIDTH, CV_32F);
-        _system_utility->ray_casting_data->surface_prediction_normal_z = cv::Mat::zeros(HEIGHT, WIDTH, CV_32F);
-        _system_utility->ray_casting_data->traversal_recording = cv::Mat::zeros(HEIGHT, WIDTH, CV_32F);
+        system_utility->ray_casting_data->surface_prediction_x = cv::Mat::zeros(system_utility->GetImageHeight(), system_utility->GetImageWidth(), CV_32F);
+        system_utility->ray_casting_data->surface_prediction_y = cv::Mat::zeros(system_utility->GetImageHeight(), system_utility->GetImageWidth(), CV_32F);
+        system_utility->ray_casting_data->surface_prediction_z = cv::Mat::zeros(system_utility->GetImageHeight(), system_utility->GetImageWidth(), CV_32F);
+        system_utility->ray_casting_data->surface_prediction_normal_x = cv::Mat::zeros(system_utility->GetImageHeight(), system_utility->GetImageWidth(), CV_32F);
+        system_utility->ray_casting_data->surface_prediction_normal_y = cv::Mat::zeros(system_utility->GetImageHeight(), system_utility->GetImageWidth(), CV_32F);
+        system_utility->ray_casting_data->surface_prediction_normal_z = cv::Mat::zeros(system_utility->GetImageHeight(), system_utility->GetImageWidth(), CV_32F);
+        system_utility->ray_casting_data->traversal_recording = cv::Mat::zeros(system_utility->GetImageHeight(), system_utility->GetImageWidth(), CV_32F);
     }
 
     void KinfuPipeline::CleanDepthData()
     {
-        _system_utility->depth_data->depth_image_next = cv::Mat::zeros(HEIGHT, WIDTH, CV_16UC1);
-        _system_utility->depth_data->raw_vertices_x = cv::Mat::zeros(HEIGHT, WIDTH, CV_32F);
-        _system_utility->depth_data->raw_vertices_y = cv::Mat::zeros(HEIGHT, WIDTH, CV_32F);
-        _system_utility->depth_data->raw_normal_x = cv::Mat::zeros(HEIGHT, WIDTH, CV_32F);
-        _system_utility->depth_data->raw_normal_y = cv::Mat::zeros(HEIGHT, WIDTH, CV_32F);
-        _system_utility->depth_data->raw_normal_z = cv::Mat::zeros(HEIGHT, WIDTH, CV_32F);
-        _system_utility->depth_data->vertex_mask = cv::Mat::zeros(HEIGHT, WIDTH, CV_8U);
-        _system_utility->depth_data->bilateral_output = cv::Mat::zeros(HEIGHT, WIDTH, CV_32F);
+        system_utility->depth_data->depth_image_next = cv::Mat::zeros(system_utility->GetImageHeight(), system_utility->GetImageWidth(), CV_16UC1);
+        system_utility->depth_data->raw_vertices_x = cv::Mat::zeros(system_utility->GetImageHeight(), system_utility->GetImageWidth(), CV_32F);
+        system_utility->depth_data->raw_vertices_y = cv::Mat::zeros(system_utility->GetImageHeight(), system_utility->GetImageWidth(), CV_32F);
+        system_utility->depth_data->raw_normal_x = cv::Mat::zeros(system_utility->GetImageHeight(), system_utility->GetImageWidth(), CV_32F);
+        system_utility->depth_data->raw_normal_y = cv::Mat::zeros(system_utility->GetImageHeight(), system_utility->GetImageWidth(), CV_32F);
+        system_utility->depth_data->raw_normal_z = cv::Mat::zeros(system_utility->GetImageHeight(), system_utility->GetImageWidth(), CV_32F);
+        system_utility->depth_data->vertex_mask = cv::Mat::zeros(system_utility->GetImageHeight(), system_utility->GetImageWidth(), CV_8U);
+        system_utility->depth_data->bilateral_output = cv::Mat::zeros(system_utility->GetImageHeight(), system_utility->GetImageWidth(), CV_32F);
     }
 }

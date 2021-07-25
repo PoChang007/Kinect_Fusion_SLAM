@@ -3,29 +3,31 @@
 
 namespace Kinfu
 {
-    SystemUtility::SystemUtility()
+    SystemUtility::SystemUtility(int height, int width)
     {
-        initial_depth_image = cv::Mat::zeros(HEIGHT, WIDTH, CV_16UC1);
-        color_image = cv::Mat::zeros(HEIGHT, WIDTH, CV_8UC3);
+        _height = height;
+        _width = width;
+        initial_depth_image = cv::Mat::zeros(_height, _width, CV_16UC1);
+        color_image = cv::Mat::zeros(_height, _width, CV_8UC3);
 
         ray_casting_data = std::make_unique<RayCastingData>();
-        ray_casting_data->surface_prediction_x = cv::Mat::zeros(HEIGHT, WIDTH, CV_32F);
-        ray_casting_data->surface_prediction_y = cv::Mat::zeros(HEIGHT, WIDTH, CV_32F);
-        ray_casting_data->surface_prediction_z = cv::Mat::zeros(HEIGHT, WIDTH, CV_32F);
-        ray_casting_data->surface_prediction_normal_x = cv::Mat::zeros(HEIGHT, WIDTH, CV_32F);
-        ray_casting_data->surface_prediction_normal_y = cv::Mat::zeros(HEIGHT, WIDTH, CV_32F);
-        ray_casting_data->surface_prediction_normal_z = cv::Mat::zeros(HEIGHT, WIDTH, CV_32F);
-        ray_casting_data->traversal_recording = cv::Mat::zeros(HEIGHT, WIDTH, CV_32F);
+        ray_casting_data->surface_prediction_x = cv::Mat::zeros(_height, _width, CV_32F);
+        ray_casting_data->surface_prediction_y = cv::Mat::zeros(_height, _width, CV_32F);
+        ray_casting_data->surface_prediction_z = cv::Mat::zeros(_height, _width, CV_32F);
+        ray_casting_data->surface_prediction_normal_x = cv::Mat::zeros(_height, _width, CV_32F);
+        ray_casting_data->surface_prediction_normal_y = cv::Mat::zeros(_height, _width, CV_32F);
+        ray_casting_data->surface_prediction_normal_z = cv::Mat::zeros(_height, _width, CV_32F);
+        ray_casting_data->traversal_recording = cv::Mat::zeros(_height, _width, CV_32F);
 
         depth_data = std::make_unique<DepthImage3dData>();
-        depth_data->depth_image_next = cv::Mat::zeros(HEIGHT, WIDTH, CV_16UC1);
-        depth_data->raw_vertices_x = cv::Mat::zeros(HEIGHT, WIDTH, CV_32F);
-        depth_data->raw_vertices_y = cv::Mat::zeros(HEIGHT, WIDTH, CV_32F);
-        depth_data->raw_normal_x = cv::Mat::zeros(HEIGHT, WIDTH, CV_32F);
-        depth_data->raw_normal_y = cv::Mat::zeros(HEIGHT, WIDTH, CV_32F);
-        depth_data->raw_normal_z = cv::Mat::zeros(HEIGHT, WIDTH, CV_32F);
-        depth_data->vertex_mask = cv::Mat::zeros(HEIGHT, WIDTH, CV_8U);
-        depth_data->bilateral_output = cv::Mat::zeros(HEIGHT, WIDTH, CV_32F);
+        depth_data->depth_image_next = cv::Mat::zeros(_height, _width, CV_16UC1);
+        depth_data->raw_vertices_x = cv::Mat::zeros(_height, _width, CV_32F);
+        depth_data->raw_vertices_y = cv::Mat::zeros(_height, _width, CV_32F);
+        depth_data->raw_normal_x = cv::Mat::zeros(_height, _width, CV_32F);
+        depth_data->raw_normal_y = cv::Mat::zeros(_height, _width, CV_32F);
+        depth_data->raw_normal_z = cv::Mat::zeros(_height, _width, CV_32F);
+        depth_data->vertex_mask = cv::Mat::zeros(_height, _width, CV_8U);
+        depth_data->bilateral_output = cv::Mat::zeros(_height, _width, CV_32F);
     }
 
     SystemUtility::~SystemUtility()
@@ -56,7 +58,7 @@ namespace Kinfu
         char filename[200];
         sprintf(filename, "../data/dep%04d.dat", frame_index);
         FILE *fp = fopen(filename, "rb");
-        fread(depth_image.data, 2, HEIGHT * WIDTH, fp);
+        fread(depth_image.data, 2, _height * _width, fp);
         fclose(fp);
 
         // convert to float type
