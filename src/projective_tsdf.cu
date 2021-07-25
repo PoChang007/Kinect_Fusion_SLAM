@@ -2,12 +2,12 @@
 
 #define WRK 1.0f
 
-__global__ void Projective_TSDF(float *dev_cam_intrinsic, float *dev_global_extrinsic,
-                                float *dev_inv_cam_intrinsic, float *dev_inv_global_extrinsic, float *dev_vertices_z,
-                                float *dev_voxel_grid_x, float *dev_voxel_grid_y, float *dev_voxel_grid_z,
+__global__ void Projective_TSDF(const float *dev_cam_intrinsic, float *dev_global_extrinsic,
+                                const float *dev_inv_cam_intrinsic, float *dev_inv_global_extrinsic, float *dev_vertices_z,
+                                const float *dev_voxel_grid_x, const float *dev_voxel_grid_y, const float *dev_voxel_grid_z,
                                 float *dev_global_tsdf, float *dev_global_weight_tsdf,
-                                float truncated_distance, float sdf_minimum, float sdf_maximum, bool initial_tsdf_construct,
-                                float voxel_length, float voxel_width, float voxel_height,
+                                const float truncated_distance, const float sdf_minimum, const float sdf_maximum, bool initial_tsdf_construct,
+                                const float voxel_length, const float voxel_width, const float voxel_height,
                                 const int HEIGHT, const int WIDTH)
 {
     const int x = blockDim.x * blockIdx.x + threadIdx.x;

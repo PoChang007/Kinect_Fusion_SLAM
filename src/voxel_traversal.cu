@@ -74,13 +74,13 @@ __device__ float Ray_Box_Intersection(bool &flag, float3 &ray_direction, float3 
 
 __global__ void Voxel_Traversal(float *dev_surface_points_x, float *dev_surface_points_y, float *dev_surface_points_z,
                                 float *dev_surface_normals_x, float *dev_surface_normals_y, float *dev_surface_normals_z,
-                                float *dev_depth_image_coord_x, float *dev_depth_image_coord_y,
-                                float *dev_cam_intrinsic, float *dev_global_extrinsic,
-                                float *dev_inv_cam_intrinsic, float *dev_inv_global_extrinsic, float *dev_depth_image,
-                                float *dev_voxel_grid_x, float *dev_voxel_grid_y,
-                                float *dev_voxel_grid_z, float *dev_global_tsdf,
-                                int voxel_length, int voxel_width, int voxel_height,
-                                float truncated_distance, float3 voxel_volume_min, float3 voxel_volume_max, float voxel_distance,
+                                const float *dev_depth_image_coord_x, const float *dev_depth_image_coord_y,
+                                const float *dev_cam_intrinsic, float *dev_global_extrinsic,
+                                const float *dev_inv_cam_intrinsic, float *dev_inv_global_extrinsic, const float *dev_depth_image,
+                                const float *dev_voxel_grid_x, const float *dev_voxel_grid_y,
+                                const float *dev_voxel_grid_z, float *dev_global_tsdf,
+                                const int voxel_length, const int voxel_width, const int voxel_height,
+                                const float truncated_distance, float3 voxel_volume_min, float3 voxel_volume_max, const float voxel_distance,
                                 const int HEIGHT, const int WIDTH)
 {
     const int x = blockDim.x * blockIdx.x + threadIdx.x;
@@ -89,7 +89,7 @@ __global__ void Voxel_Traversal(float *dev_surface_points_x, float *dev_surface_
 
     if (dev_depth_image[x] != 0)
     {
-        // scale the measurment along the pixel ray
+        // scale the measurement along the pixel ray
         float lambda_x = dev_inv_cam_intrinsic[0] * (dev_depth_image_coord_x[x] + 1.0f) + dev_inv_cam_intrinsic[1] * (dev_depth_image_coord_y[x] + 1.0f) + dev_inv_cam_intrinsic[2] * 1.f;
         float lambda_y = dev_inv_cam_intrinsic[3] * (dev_depth_image_coord_x[x] + 1.0f) + dev_inv_cam_intrinsic[4] * (dev_depth_image_coord_y[x] + 1.0f) + dev_inv_cam_intrinsic[5] * 1.f;
         float lambda_z = dev_inv_cam_intrinsic[6] * (dev_depth_image_coord_x[x] + 1.0f) + dev_inv_cam_intrinsic[7] * (dev_depth_image_coord_y[x] + 1.0f) + dev_inv_cam_intrinsic[8] * 1.f;
@@ -423,7 +423,7 @@ __global__ void Voxel_Traversal(float *dev_surface_points_x, float *dev_surface_
     }
 }
 
-extern "C" void Ray_Casting(const int HEIGHT, const int WIDTH, 
+extern "C" void Ray_Casting(const int HEIGHT, const int WIDTH,
                             cv::Mat &surface_points_x_cv, cv::Mat &surface_points_y_cv, cv::Mat &surface_points_z_cv,
                             cv::Mat &surface_normals_x_cv, cv::Mat &surface_normals_y_cv, cv::Mat &surface_normals_z_cv,
                             const float *voxel_grid_x, const float *voxel_grid_y, const float *voxel_grid_z,
