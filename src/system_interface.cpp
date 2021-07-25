@@ -8,10 +8,10 @@ int main()
     int width = 640;
 
     // frame settings
-    int start_frame = 20;
-    int end_frame = 100;
+    int start_frame = 25;
+    int end_frame = 300;
     int current_frame = start_frame;
-    int per_nth_frame = 3;
+    int per_nth_frame = 1;
     int per_nth_render_frame = 5;
     bool firstFrameRender = false;
 
@@ -22,7 +22,7 @@ int main()
     viewer->setBackgroundColor(0, 0, 0);
     viewer->initCameraParameters();
     // viewer->registerKeyboardCallback(KeyboardEvent);
-    viewer->setCameraPosition(0, 0, -8, 0, 0, 0.1, 0, -1, 0);
+    viewer->setCameraPosition(0, 0, -10, 0, 0, 0, 0, -1, 0);
 
     while (!viewer->wasStopped())
     {

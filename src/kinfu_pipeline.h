@@ -39,18 +39,18 @@ namespace Kinfu
         void CleanRayCastingData();
 
         // define voxel size
-        const int _voxel_grid_x_start{-80};
-        const int _voxel_grid_y_start{-20};
-        const int _voxel_grid_z_start{-30};
-        const int _voxel_length{160};
-        const int _voxel_width{250};
-        const int _voxel_height{140};
-        const int _array_size = _voxel_length * _voxel_width * _voxel_height;
         const float _voxel_distance{10};
+        int _voxel_grid_x_start{-2000 / (int)_voxel_distance};
+        int _voxel_grid_y_start{-2000 / (int)_voxel_distance};
+        int _voxel_grid_z_start{-1200 / (int)_voxel_distance};
+        int _voxel_length{3600 / (int)_voxel_distance};
+        int _voxel_width{3600 / (int)_voxel_distance};
+        int _voxel_height{3000 / (int)_voxel_distance};
+        const int _array_size = _voxel_length * _voxel_width * _voxel_height;
 
+        // truncated distance
         const float _truncated_distance{300.f};
-
-        // Maximumand Minimum SDF value
+        // maximum/minimum SDF value
         const float _sdf_maximum{300.f};
         const float _sdf_minimum{-30.f};
 
