@@ -1,9 +1,9 @@
 #include "kinfu_pipeline.h"
 
-__global__ void Calculate_Vertices_And_Normals(float *dev_vertices_z, float *dev_inv_cam_intrinsic,
+__global__ void Calculate_Vertices_And_Normals(const float *dev_vertices_z, const float *dev_inv_cam_intrinsic,
 											   float *dev_vertices_x, float *dev_vertices_y,
 											   float *dev_normals_x, float *dev_normals_y, float *dev_normals_z,
-											   uint8_t *dev_vertex_mask, float *dev_depth_image_coord_y, float *dev_depth_image_coord_x,
+											   uint8_t *dev_vertex_mask, const float *dev_depth_image_coord_y, const float *dev_depth_image_coord_x,
 											   const int HEIGHT, const int WIDTH)
 {
 	const int x = blockDim.x * blockIdx.x + threadIdx.x;
@@ -50,8 +50,8 @@ __global__ void Calculate_Vertices_And_Normals(float *dev_vertices_z, float *dev
 	}
 }
 
-extern "C" void Calculate_Vertices_And_Normals(const int HEIGHT, int WIDTH,
-											   cv::Mat &vertices_z_cv, cv::Mat &cam_intrinsic_cv,
+extern "C" void Calculate_Vertices_And_Normals(const int &HEIGHT, const int &WIDTH,
+											   const cv::Mat &vertices_z_cv, const cv::Mat &cam_intrinsic_cv,
 											   cv::Mat &vertices_x_cv, cv::Mat &vertices_y_cv,
 											   cv::Mat &normals_x_cv, cv::Mat &normals_y_cv, cv::Mat &normals_z_cv,
 											   cv::Mat &vertex_mask, const float *depth_image_coord_y, const float *depth_image_coord_x)

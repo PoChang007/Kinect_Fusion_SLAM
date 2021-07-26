@@ -1,7 +1,7 @@
 #include "kinfu_pipeline.h"
 
-__global__ void Bilateral_Filtering(float *dev_depth_Image_array, float *dev_bilateral_output_array,
-									float *dev_spatial_kernel_array, float *dev_depth_Image_index_y, float *dev_depth_Image_index_x,
+__global__ void Bilateral_Filtering(const float *dev_depth_Image_array, float *dev_bilateral_output_array,
+									const float *dev_spatial_kernel_array, const float *dev_depth_Image_index_y, const float *dev_depth_Image_index_x,
 									const int bw_radius, const float sigma_r,
 									const int HEIGHT, const int WIDTH)
 {
@@ -47,10 +47,10 @@ __global__ void Bilateral_Filtering(float *dev_depth_Image_array, float *dev_bil
 	}
 }
 
-extern "C" void Bilateral_Filtering(const int HEIGHT, const int WIDTH,
-									cv::Mat &depth_Image, cv::Mat &bilateral_output,
-									cv::Mat &spatial_kernel, const float *depth_Image_index_y, const float *depth_Image_index_x,
-									const int bw_radius, const float sigma_r)
+extern "C" void Bilateral_Filtering(const int &HEIGHT, const int &WIDTH,
+									const cv::Mat &depth_Image, cv::Mat &bilateral_output,
+									const cv::Mat &spatial_kernel, const float *depth_Image_index_y, const float *depth_Image_index_x,
+									const int &bw_radius, const float &sigma_r)
 {
 	//cudaEvent_t start, stop;
 	//float elapsedTime;
