@@ -4,13 +4,13 @@
 #define SIZE_6 6
 #define SIZE_36 36
 
-__global__ void ICP(float *dev_vertices_x, float *dev_vertices_y, float *dev_vertices_z,
-					float *dev_normals_x, float *dev_normals_y, float *dev_normals_z,
-					float *dev_surface_points_x, float *dev_surface_points_y, float *dev_surface_points_z,
-					float *dev_surface_normals_x, float *dev_surface_normals_y, float *dev_surface_normals_z,
-					float *dev_inv_cam_intrinsic, float *dev_inv_global_extrinsic,
+__global__ void ICP(const float *dev_vertices_x, const float *dev_vertices_y, const float *dev_vertices_z,
+					const float *dev_normals_x, const float *dev_normals_y, const float *dev_normals_z,
+					const float *dev_surface_points_x, const float *dev_surface_points_y, const float *dev_surface_points_z,
+					const float *dev_surface_normals_x, const float *dev_surface_normals_y, const float *dev_surface_normals_z,
+					const float *dev_inv_cam_intrinsic, float *dev_inv_global_extrinsic,
 					float *dev_refinement_6dof_trans, float *dev_frame_to_frame_trans,
-					float *dev_linear_system_right_matrix, float *dev_linear_system_left_matrix, uint8_t *dev_vertex_mask,
+					float *dev_linear_system_right_matrix, float *dev_linear_system_left_matrix, const uint8_t *dev_vertex_mask,
 					const int HEIGHT, const int WIDTH)
 {
 	const int x = blockDim.x * blockIdx.x + threadIdx.x;
@@ -222,7 +222,7 @@ void Solve_Linear_System(float *linear_system_left_sum, float *linear_system_rig
 	delete[] lower_triangle_vector;
 }
 
-__global__ void Sum_Array(float *g_idata, float *g_odata, int k, const int HEIGHT, const int WIDTH)
+__global__ void Sum_Array(const float *g_idata, float *g_odata, const int k, const int HEIGHT, const int WIDTH)
 {
 	extern __shared__ float sdata[64];
 
@@ -244,13 +244,13 @@ __global__ void Sum_Array(float *g_idata, float *g_odata, int k, const int HEIGH
 		g_odata[blockIdx.x] = sdata[0];
 }
 
-extern "C" void Estimate_Sensor_Pose(const int HEIGHT, const int WIDTH,
+extern "C" void Estimate_Sensor_Pose(const int &HEIGHT, const int &WIDTH,
 									 const cv::Mat &cam_intrinsic_cv, cv::Mat &global_extrinsic_cv,
-									 cv::Mat &vertices_x_cv, cv::Mat &vertices_y_cv, cv::Mat &vertices_z_cv,
-									 cv::Mat &normals_x_cv, cv::Mat &normals_y_cv, cv::Mat &normals_z_cv,
-									 cv::Mat &surface_points_x_cv, cv::Mat &surface_points_y_cv, cv::Mat &surface_points_z_cv,
-									 cv::Mat &surface_normals_x_cv, cv::Mat &surface_normals_y_cv, cv::Mat &surface_normals_z_cv,
-									 cv::Mat &vertex_mask)
+									 const cv::Mat &vertices_x_cv, const cv::Mat &vertices_y_cv, const cv::Mat &vertices_z_cv,
+									 const cv::Mat &normals_x_cv, const cv::Mat &normals_y_cv, const cv::Mat &normals_z_cv,
+									 const cv::Mat &surface_points_x_cv, const cv::Mat &surface_points_y_cv, const cv::Mat &surface_points_z_cv,
+									 const cv::Mat &surface_normals_x_cv, const cv::Mat &surface_normals_y_cv, const cv::Mat &surface_normals_z_cv,
+									 const cv::Mat &vertex_mask)
 {
 	cv::Mat inv_cam_intrinsic_cv = cam_intrinsic_cv.inv();
 	cv::Mat inv_global_extrinsic_cv = global_extrinsic_cv.inv();
