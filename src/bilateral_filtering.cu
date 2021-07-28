@@ -25,7 +25,6 @@ __global__ void Bilateral_Filtering(const float *dev_depth_Image_array, float *d
 			{
 				float temp = dev_depth_Image_array[y * WIDTH + x] - depth_value;
 				temp = expf(-(temp * temp) / (2 * sigma_r * sigma_r));
-				//temp = expf(temp);
 				float weights = dev_spatial_kernel_array[((y - start_y) + bw_radius) * kernel_length + ((x - start_x) + bw_radius)] * temp + 0.000000001f;
 				neighboring_pixels[((y - start_y) + bw_radius) * kernel_length + ((x - start_x) + bw_radius)] = weights;
 				sum = sum + weights;
