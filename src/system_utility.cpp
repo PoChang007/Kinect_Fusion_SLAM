@@ -3,10 +3,12 @@
 
 namespace Kinfu
 {
-    SystemUtility::SystemUtility(int height, int width)
+    SystemUtility::SystemUtility(int height, int width, float max_depth, float min_depth)
     {
         _height = height;
         _width = width;
+        _max_depth = max_depth;
+        _min_depth = min_depth;
         initial_depth_image = cv::Mat::zeros(_height, _width, CV_16UC1);
         color_image = cv::Mat::zeros(_height, _width, CV_8UC3);
 
@@ -75,14 +77,12 @@ namespace Kinfu
     void SystemUtility::GetRangeDepth(cv::Mat &depth_image)
     {
         // filter out uninterested regions
-        float MaxRange = 2000.f;
-        float MinRange = 300.f;
-        cv::Mat FilterImage;
+        cv::Mat filter_image;
         // Split into 255 and 0
-        cv::inRange(depth_image, MinRange, MaxRange, FilterImage); // get either 255 or 0
-        FilterImage = FilterImage / 255;
-        FilterImage.convertTo(FilterImage, CV_32F);
-        depth_image = depth_image.mul(FilterImage);
+        cv::inRange(depth_image, _min_depth, _max_depth, filter_image); // get either 255 or 0
+        filter_image = filter_image / 255;
+        filter_image.convertTo(filter_image, CV_32F);
+        depth_image = depth_image.mul(filter_image);
     }
 
     void SystemUtility::GenerateMeshGrid(const cv::Mat &xgv, const cv::Mat &ygv, cv::Mat &X, cv::Mat &Y)

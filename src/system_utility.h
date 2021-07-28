@@ -11,7 +11,7 @@ namespace Kinfu
     class SystemUtility
     {
     public:
-        SystemUtility(int height, int width);
+        SystemUtility(int height, int width, float max_depth, float min_depth);
         ~SystemUtility();
 
         void LoadDepthData(cv::Mat &depth_image, int frame_index);
@@ -62,6 +62,8 @@ namespace Kinfu
     private:
         int _height{0};
         int _width{0};
+        float _max_depth{0.f};
+        float _min_depth{0.f};
     };
 }
 

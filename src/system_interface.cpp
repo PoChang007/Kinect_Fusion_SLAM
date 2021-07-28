@@ -7,6 +7,10 @@ int main()
     int height = 480;
     int width = 640;
 
+    // depth Threshold
+    float max_depth = 2000.f;
+    float min_depth = 300.f;
+
     // frame settings
     int start_frame = 25;
     int end_frame = 300;
@@ -15,7 +19,7 @@ int main()
     int per_nth_render_frame = 5;
     bool firstFrameRender = false;
 
-    std::shared_ptr<Kinfu::KinfuPipeline> kinectFusionSystem = std::make_shared<Kinfu::KinfuPipeline>(height, width);
+    std::shared_ptr<Kinfu::KinfuPipeline> kinectFusionSystem = std::make_shared<Kinfu::KinfuPipeline>(height, width, max_depth, min_depth);
     std::unique_ptr<ThreeDViewer> pclRender = std::make_unique<ThreeDViewer>(kinectFusionSystem->get_shared_this());
 
     pcl::visualization::PCLVisualizer::Ptr viewer(new pcl::visualization::PCLVisualizer("3D Viewer"));
@@ -36,7 +40,7 @@ int main()
         {
             kinectFusionSystem->InitialProcessing(start_frame);
             cv::imshow(windowName[0], kinectFusionSystem->system_utility->color_image);
-            cv::imshow(windowName[1], kinectFusionSystem->system_utility->initial_depth_image * (1.f / 2000.f));
+            cv::imshow(windowName[1], kinectFusionSystem->system_utility->initial_depth_image * (1.f / max_depth));
 
             pclRender->SetUpPointClouds(kinectFusionSystem);
             pcl::visualization::PointCloudColorHandlerRGBField<pcl::PointXYZRGB> rgb(pclRender->point_cloud[0]);
@@ -49,7 +53,7 @@ int main()
         {
             kinectFusionSystem->IncomingFrameProcessing(current_frame, per_nth_frame);
             cv::imshow(windowName[0], kinectFusionSystem->system_utility->color_image);
-            cv::imshow(windowName[1], kinectFusionSystem->system_utility->depth_data->depth_image_next * (1.f / 2000.f));
+            cv::imshow(windowName[1], kinectFusionSystem->system_utility->depth_data->depth_image_next * (1.f / max_depth));
 
             if (current_frame % per_nth_render_frame == 0)
             {

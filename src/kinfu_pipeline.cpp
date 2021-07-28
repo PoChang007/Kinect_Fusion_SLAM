@@ -2,9 +2,9 @@
 
 namespace Kinfu
 {
-    KinfuPipeline::KinfuPipeline(int height, int width)
+    KinfuPipeline::KinfuPipeline(int height, int width, float max_depth, float min_depth)
     {
-        system_utility = std::make_unique<SystemUtility>(height, width);
+        system_utility = std::make_unique<SystemUtility>(height, width, max_depth, min_depth);
 
         intrinsic_matrix = cv::Mat::zeros(3, 3, CV_32F);
         extrinsic_matrix = cv::Mat::eye(4, 4, CV_32F);
