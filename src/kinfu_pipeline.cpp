@@ -23,8 +23,8 @@ namespace Kinfu
         intrinsic_matrix.ptr<float>(2)[2] = 1.0f;
 
         // initialize image index matrices
-        depth_Image_index_y = new float[width * height];
-        depth_Image_index_x = new float[width * height];
+        depth_Image_index_y = (float *)malloc(sizeof(float) * width * height);
+        depth_Image_index_x = (float *)malloc(sizeof(float) * width * height);
         for (int y = 0; y < height; y++)
         {
             for (int x = 0; x < width; x++)
@@ -35,9 +35,9 @@ namespace Kinfu
         }
 
         // initialize voxel grid
-        voxel_grid_x = new float[_array_size];
-        voxel_grid_y = new float[_array_size];
-        voxel_grid_z = new float[_array_size];
+        voxel_grid_x = (float *)malloc(sizeof(float) * _array_size);
+        voxel_grid_y = (float *)malloc(sizeof(float) * _array_size);
+        voxel_grid_z = (float *)malloc(sizeof(float) * _array_size);
 
         int x_index_from_zero = -_voxel_grid_x_start;
         int y_index_from_zero = -_voxel_grid_y_start;
@@ -57,8 +57,8 @@ namespace Kinfu
         }
 
         // for truncated signed distane value storage
-        global_tsdf = new float[_array_size];
-        global_weight_tsdf = new float[_array_size];
+        global_tsdf = (float *)malloc(sizeof(float) * _array_size);
+        global_weight_tsdf = (float *)malloc(sizeof(float) * _array_size);
         std::fill_n(global_tsdf, _array_size, NAN);
         std::fill_n(global_weight_tsdf, _array_size, NAN);
     }
@@ -71,13 +71,13 @@ namespace Kinfu
         _spatial_kernel_x.release();
         _weight_d.release();
 
-        delete[] depth_Image_index_y;
-        delete[] depth_Image_index_x;
-        delete[] voxel_grid_x;
-        delete[] voxel_grid_y;
-        delete[] voxel_grid_z;
-        delete[] global_tsdf;
-        delete[] global_weight_tsdf;
+        free(depth_Image_index_y);
+        free(depth_Image_index_x);
+        free(voxel_grid_x);
+        free(voxel_grid_y);
+        free(voxel_grid_z);
+        free(global_tsdf);
+        free(global_weight_tsdf);
     }
 
     void KinfuPipeline::InitialProcessing(int start_frame)
@@ -153,9 +153,9 @@ namespace Kinfu
                              system_utility->depth_data->vertex_mask);
 
         std::cout << "frame " << current_frame << std::endl;
-        std::cout << "Position x " << extrinsic_matrix.ptr<float>(0)[3] << std::endl;
-        std::cout << "Position y " << extrinsic_matrix.ptr<float>(1)[3] << std::endl;
-        std::cout << "Position z " << extrinsic_matrix.ptr<float>(2)[3] << std::endl;
+        std::cout << "cam_pos_x " << extrinsic_matrix.ptr<float>(0)[3] << std::endl;
+        std::cout << "cam_pos_y " << extrinsic_matrix.ptr<float>(1)[3] << std::endl;
+        std::cout << "cam_pos_z " << extrinsic_matrix.ptr<float>(2)[3] << std::endl;
 
         Projective_TSDF(system_utility->GetImageHeight(), system_utility->GetImageWidth(),
                         voxel_grid_x, voxel_grid_y, voxel_grid_z, intrinsic_matrix, extrinsic_matrix,
@@ -182,7 +182,6 @@ namespace Kinfu
         auto finish = std::chrono::high_resolution_clock::now();
         std::chrono::duration<double> elapsed = finish - start;
         std::cout << current_frame << " frame elapsed time: " << elapsed.count() << " s\n";
-        current_frame += per_nth_frame;
     }
 
     void KinfuPipeline::CleanRayCastingData()

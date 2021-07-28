@@ -259,8 +259,8 @@ extern "C" void Estimate_Sensor_Pose(const int &HEIGHT, const int &WIDTH,
 	global_extrinsic_cv.copyTo(refinement_6dof_trans_cv);
 
 	// host array
-	float *linear_system_right_matrix = new float[WIDTH * HEIGHT * SIZE_6];
-	float *linear_system_left_matrix = new float[WIDTH * HEIGHT * SIZE_36];
+	float *linear_system_right_matrix = (float *)malloc(sizeof(float) * WIDTH * HEIGHT * SIZE_6);
+	float *linear_system_left_matrix = (float *)malloc(sizeof(float) * WIDTH * HEIGHT * SIZE_36);
 	std::fill_n(linear_system_right_matrix, WIDTH * HEIGHT * SIZE_6, 0.0f);
 	std::fill_n(linear_system_left_matrix, WIDTH * HEIGHT * SIZE_36, 0.0f);
 
@@ -329,7 +329,7 @@ extern "C" void Estimate_Sensor_Pose(const int &HEIGHT, const int &WIDTH,
 	int threads_per_block = 64;
 	int blocks_per_grid = (WIDTH * HEIGHT + threads_per_block - 1) / threads_per_block;
 
-	float *block_cumulative_sum = new float[blocks_per_grid];
+	float *block_cumulative_sum = (float *)malloc(sizeof(float) * blocks_per_grid);
 	std::fill_n(block_cumulative_sum, blocks_per_grid, 0.0f);
 	float *dev_block_cumulative_sum = 0;
 	cudaMalloc((void **)&dev_block_cumulative_sum, blocks_per_grid * sizeof(float));
@@ -355,9 +355,9 @@ extern "C" void Estimate_Sensor_Pose(const int &HEIGHT, const int &WIDTH,
 													HEIGHT, WIDTH);
 		cudaDeviceSynchronize();
 
-		float *linear_system_right_sum = new float[SIZE_6];
+		float *linear_system_right_sum = (float *)malloc(sizeof(float) * SIZE_6);
 		std::fill_n(linear_system_right_sum, SIZE_6, 0.0f);
-		float *linear_system_left_sum = new float[SIZE_36];
+		float *linear_system_left_sum = (float *)malloc(sizeof(float) * SIZE_36);
 		std::fill_n(linear_system_left_sum, SIZE_36, 0.0f);
 
 		for (int k = 0; k < SIZE_6; k++)
@@ -392,16 +392,16 @@ extern "C" void Estimate_Sensor_Pose(const int &HEIGHT, const int &WIDTH,
 
 		cv::Mat linear_system_right_sum_cv(SIZE_6, 1, CV_32F);
 		memcpy(linear_system_right_sum_cv.data, linear_system_right_sum, SIZE_6 * 1 * sizeof(float));
-		// linear_system_right_sum will return output of updated parameters {Beta, Gamma, Alpha, tx, ty, tz}
-		cv::Cholesky(linear_system_left_sum, linear_system_left_sum_cv.step, SIZE_6, linear_system_right_sum, linear_system_right_sum_cv.step, 1);
 
 		cv::Mat updated_6dof_cv(SIZE_6, 1, CV_32F);
+
+		// linear_system_right_sum will return output of updated parameters {Beta, Gamma, Alpha, tx, ty, tz}
+		cv::Cholesky(linear_system_left_sum, linear_system_left_sum_cv.step, SIZE_6, linear_system_right_sum, linear_system_right_sum_cv.step, 1);
+		memcpy(updated_6dof_cv.data, linear_system_right_sum, SIZE_6 * 1 * sizeof(float));
 
 		// solve linear system step by step
 		//Solve_Linear_System(linear_system_left_sum, linear_system_right_sum, refinement_6dof_trans_cv,
 		//	                global_extrinsic_cv, updated_6dof_cv, i);
-
-		memcpy(updated_6dof_cv.data, linear_system_right_sum, SIZE_6 * 1 * sizeof(float));
 
 		cv::Mat sixdof_increment_cv(4, 4, CV_32F);
 		sixdof_increment_cv.ptr<float>(0)[0] = 1.0f;
@@ -429,8 +429,8 @@ extern "C" void Estimate_Sensor_Pose(const int &HEIGHT, const int &WIDTH,
 		global_extrinsic_cv = refinement_6dof_trans_cv;
 
 		// clean all values for the next run of icp
-		delete[] linear_system_right_sum;
-		delete[] linear_system_left_sum;
+		free(linear_system_right_sum);
+		free(linear_system_left_sum);
 	}
 
 	// free device array
@@ -459,7 +459,7 @@ extern "C" void Estimate_Sensor_Pose(const int &HEIGHT, const int &WIDTH,
 	cudaFree(dev_linear_system_left_matrix);
 	cudaFree(dev_block_cumulative_sum);
 
-	delete[] block_cumulative_sum;
-	delete[] linear_system_right_matrix;
-	delete[] linear_system_left_matrix;
+	free(block_cumulative_sum);
+	free(linear_system_right_matrix);
+	free(linear_system_left_matrix);
 }
