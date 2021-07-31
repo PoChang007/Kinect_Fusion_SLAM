@@ -1,11 +1,13 @@
 #include "kinfu_pipeline.h"
-#include "threeDViewer.h"
+#include "threeD_viewer.h"
 
-ThreeDViewer::ThreeDViewer(std::shared_ptr<Kinfu::KinfuPipeline> kinect_fusion_system)
+ThreeDViewer::ThreeDViewer(int height, int width, std::shared_ptr<Kinfu::KinfuPipeline> kinect_fusion_system)
 {
+	_rows = height;
+	_cols = width;
 	point_cloud.emplace_back(new pcl::PointCloud<pcl::PointXYZRGB>);
-	point_cloud[0]->width = (uint32_t)640;
-	point_cloud[0]->height = (uint32_t)480;
+	point_cloud[0]->width = (uint32_t)height;
+	point_cloud[0]->height = (uint32_t)width;
 	point_cloud[0]->is_dense = false;
 	point_cloud[0]->points.resize(point_cloud[0]->width * point_cloud[0]->height);
 }

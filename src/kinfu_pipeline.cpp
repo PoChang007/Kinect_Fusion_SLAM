@@ -181,7 +181,7 @@ namespace Kinfu
 
         auto finish = std::chrono::high_resolution_clock::now();
         std::chrono::duration<double> elapsed = finish - start;
-        std::cout << current_frame << " frame elapsed time: " << elapsed.count() << " s\n";
+        std::cout << "elapsed time: " << elapsed.count() << " s\n";
     }
 
     void KinfuPipeline::CleanRayCastingData()

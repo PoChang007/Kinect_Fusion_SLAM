@@ -1,5 +1,5 @@
-#ifndef THREEDVIEWER_H_
-#define THREEDVIEWER_H_
+#ifndef THREED_VIEWER_H_
+#define THREED_VIEWER_H_
 
 #include <opencv2/core.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
@@ -9,15 +9,15 @@
 class ThreeDViewer
 {
 public:
-    ThreeDViewer(std::shared_ptr<Kinfu::KinfuPipeline> kinect_fusion_system);
+    ThreeDViewer(int height, int width, std::shared_ptr<Kinfu::KinfuPipeline> kinect_fusion_system);
     ~ThreeDViewer();
 
     void SetUpPointClouds(std::shared_ptr<Kinfu::KinfuPipeline> &kinect_fusion_system);
     std::vector<pcl::PointCloud<pcl::PointXYZRGB>::Ptr> point_cloud;
 
 private:
-    int _rows{480};
-    int _cols{640};
+    int _rows{0};
+    int _cols{0};
 };
 
 #endif
