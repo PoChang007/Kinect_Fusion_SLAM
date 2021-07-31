@@ -1,6 +1,6 @@
 # Implementation of Kinect Fusion
 
-This repository is about my implementation of [Kinect Fusion](https://ieeexplore.ieee.org/document/6162880) algorithms. Here the image capturing part in real-time is not included. Instead, a sequence of pre-captured images is used as input for the system. After executing the program, the system will estimate each frame's camera pose and predict 3D surface points based on the signed distance value and the ray casting technique. As such, with more and more frames being processed, the predicted 3D points are gradually aggregated in the global coordinate and an indoor environment can then be reconstructed.
+This repository is about an implementation of [Kinect Fusion](https://ieeexplore.ieee.org/document/6162880) algorithms. Here the image capturing part in real-time is not included. Instead, a sequence of pre-captured images is used as input for the system. After executing the program, the system will estimate each frame's camera pose and predict 3D surface points based on the signed distance value and the ray casting technique. As such, with more and more frames being processed, the predicted 3D points are gradually aggregated in the global coordinate and an indoor environment can then be reconstructed.
 
 <img src="doc/static_background_scanning.gif" width="500">
 <hr>
@@ -65,3 +65,7 @@ In 3D viewer,
 1. When the current frame's processing is done, its corresponding camera pose is temporarily stored in `cv::Mat Kinfu::KinfuPipeline::extrinsic_matrix` until the processing of the next frame is finished
 1. By default 3D point clouds are drawn per 5th frame
 1. The system was originally implemented in Matlab. The voxel traversal algorithm for ray uses Matlab index style (start at 1)
+
+## License
+
+The project is released under the [MIT License](LICENSE.md).
