@@ -1,4 +1,4 @@
-#include "kinfu_pipeline.h"
+#include "parallel_processing.h"
 #include "cuda_functions.cuh"
 
 #define SIZE_6 6

@@ -1,4 +1,4 @@
-#include "kinfu_pipeline.h"
+#include "parallel_processing.h"
 
 __global__ void Calculate_Vertices_And_Normals(const float *dev_vertices_z, const float *dev_inv_cam_intrinsic,
 											   float *dev_vertices_x, float *dev_vertices_y,

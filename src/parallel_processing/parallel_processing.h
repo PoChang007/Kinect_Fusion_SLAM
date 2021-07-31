@@ -30,7 +30,7 @@ extern "C" void Ray_Casting(const int &height, const int &width,
                             const cv::Mat &intrinsic_matrix, cv::Mat &extrinsic_matrix, float *global_tsdf,
                             const cv::Mat &depth_image, cv::Mat &traversal_recording, const float &truncated_distance,
                             const int &voxel_length, const int &voxel_width, const int &voxel_height,
-                            const int &voxel_grid_x_start, const int &voxel_grid_y_start, const int &voxel_grid_z_start, 
+                            const int &voxel_grid_x_start, const int &voxel_grid_y_start, const int &voxel_grid_z_start,
                             const float &voxel_distance);
 
 extern "C" void Calculate_Vertices_And_Normals(const int &height, const int &width,

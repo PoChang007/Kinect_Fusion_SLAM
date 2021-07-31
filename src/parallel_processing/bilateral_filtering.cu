@@ -1,4 +1,4 @@
-#include "kinfu_pipeline.h"
+#include "parallel_processing.h"
 
 __global__ void Bilateral_Filtering(const float *dev_depth_Image_array, float *dev_bilateral_output_array,
 									const float *dev_spatial_kernel_array, const float *dev_depth_Image_index_y, const float *dev_depth_Image_index_x,
