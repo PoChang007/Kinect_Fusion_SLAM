@@ -41,15 +41,15 @@ if(CUDA_FOUND)
     src/kinfu_pipeline.h
     src/system_utility.cpp
     src/system_utility.h
-    src/parallel_processing.h
     src/threeD_viewer.cpp
     src/threeD_viewer.h
-    src/projective_tsdf.cu
-    src/voxel_traversal.cu
-    src/raw_vertices.cu
-    src/sensor_pose_estimation.cu
-    src/bilateral_filtering.cu
-    src/cuda_functions.cuh
+    src/parallel_processing/parallel_processing.h
+    src/parallel_processing/projective_tsdf.cu
+    src/parallel_processing/voxel_traversal.cu
+    src/parallel_processing/raw_vertices.cu
+    src/parallel_processing/sensor_pose_estimation.cu
+    src/parallel_processing/bilateral_filtering.cu
+    src/parallel_processing/cuda_functions.cuh
     )
 endif()
 

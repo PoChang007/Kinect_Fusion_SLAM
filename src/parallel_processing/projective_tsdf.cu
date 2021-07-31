@@ -1,4 +1,4 @@
-#include "kinfu_pipeline.h"
+#include "parallel_processing.h"
 
 #define WRK 1.0f
 

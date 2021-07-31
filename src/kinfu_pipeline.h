@@ -4,7 +4,7 @@
 #include <iostream>
 #include <thread>
 #include "system_utility.h"
-#include "parallel_processing.h"
+#include "parallel_processing/parallel_processing.h"
 
 namespace Kinfu
 {

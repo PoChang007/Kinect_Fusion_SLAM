@@ -1,4 +1,4 @@
-#include "kinfu_pipeline.h"
+#include "parallel_processing.h"
 #include "cuda_functions.cuh"
 
 __device__ float Ray_Box_Intersection(bool &flag, float3 &ray_direction, float3 &voxel_volume_min, float3 &voxel_volume_max,
