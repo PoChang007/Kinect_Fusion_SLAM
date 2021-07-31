@@ -42,8 +42,8 @@ if(CUDA_FOUND)
     src/system_utility.cpp
     src/system_utility.h
     src/parallel_processing.h
-    src/threeDViewer.cpp
-    src/threeDViewer.h
+    src/threeD_viewer.cpp
+    src/threeD_viewer.h
     src/projective_tsdf.cu
     src/voxel_traversal.cu
     src/raw_vertices.cu
