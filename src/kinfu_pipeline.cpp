@@ -71,13 +71,20 @@ namespace Kinfu
         _spatial_kernel_x.release();
         _weight_d.release();
 
-        free(depth_Image_index_y);
-        free(depth_Image_index_x);
-        free(voxel_grid_x);
-        free(voxel_grid_y);
-        free(voxel_grid_z);
-        free(global_tsdf);
-        free(global_weight_tsdf);
+        if (depth_Image_index_y != nullptr)
+            free(depth_Image_index_y);
+        if (depth_Image_index_x != nullptr)
+            free(depth_Image_index_x);
+        if (voxel_grid_x != nullptr)
+            free(voxel_grid_x);
+        if (voxel_grid_y != nullptr)
+            free(voxel_grid_y);
+        if (voxel_grid_z != nullptr)
+            free(voxel_grid_z);
+        if (global_tsdf != nullptr)
+            free(global_tsdf);
+        if (global_weight_tsdf != nullptr)
+            free(global_weight_tsdf);
     }
 
     void KinfuPipeline::InitialProcessing(int start_frame)

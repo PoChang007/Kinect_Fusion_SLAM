@@ -429,8 +429,10 @@ extern "C" void Estimate_Sensor_Pose(const int &HEIGHT, const int &WIDTH,
 		global_extrinsic_cv = refinement_6dof_trans_cv;
 
 		// clean all values for the next run of icp
-		free(linear_system_right_sum);
-		free(linear_system_left_sum);
+		if (linear_system_left_sum != nullptr)
+			free(linear_system_left_sum);
+		if (linear_system_right_sum != nullptr)
+			free(linear_system_right_sum);
 	}
 
 	// free device array
@@ -459,7 +461,10 @@ extern "C" void Estimate_Sensor_Pose(const int &HEIGHT, const int &WIDTH,
 	cudaFree(dev_linear_system_left_matrix);
 	cudaFree(dev_block_cumulative_sum);
 
-	free(block_cumulative_sum);
-	free(linear_system_right_matrix);
-	free(linear_system_left_matrix);
+	if (block_cumulative_sum != nullptr)
+		free(block_cumulative_sum);
+	if (linear_system_right_matrix != nullptr)
+		free(linear_system_right_matrix);
+	if (linear_system_left_matrix != nullptr)
+		free(linear_system_left_matrix);
 }
