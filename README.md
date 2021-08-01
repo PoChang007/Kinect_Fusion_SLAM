@@ -5,7 +5,7 @@ This repository is about an implementation of [Kinect Fusion](https://ieeexplore
 <img src="doc/static_background_scanning.gif" width="500">
 <hr>
 
-## Dependencies for Running Locally (Linux)
+## Dependencies for Running Locally (Linux, NVIDIA GPU)
 
 * cmake >= 2.8
   * [click here for installation instructions](https://cmake.org/install/)
@@ -63,7 +63,10 @@ In 3D viewer,
 
 1. In this repo the RGB-D data is captured by Kinect v1. It is workable for other RGB-D sensors as long as the image size, camera's extrinsics and extrinsics between color/depth cameras are known
 1. When the current frame's processing is done, its corresponding camera pose is temporarily stored in `cv::Mat Kinfu::KinfuPipeline::extrinsic_matrix` until the processing of the next frame is finished
-1. By default 3D point clouds are drawn per 5th frame
+1. Default settings: 
+   * The size of voxel grid is 3.6m * 3.6m * 3m 
+   * The size of each voxel is 0.01m * 0.01m * 0.01m 
+   * For 3D visualization, point clouds are drawn per 5th frame
 1. The system was originally implemented in Matlab. The voxel traversal algorithm for ray uses Matlab index style (start at 1)
 
 ## License
