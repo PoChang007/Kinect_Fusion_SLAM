@@ -17,7 +17,7 @@ This repository is about an implementation of [Kinect Fusion](https://ieeexplore
   * Linux: gcc / g++ is installed by default on most Linux distros
 * CUDA >= 11.0
   * Download CUDA [here](https://developer.nvidia.com/cuda-downloads/)
-* PCL >= 1.2
+* PCL >= 1.7
   * Download PCL [here](https://pointclouds.org/downloads/)
 
 ## Basic Build Instructions
