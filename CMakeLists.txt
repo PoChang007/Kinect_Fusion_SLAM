@@ -2,13 +2,13 @@ cmake_minimum_required(VERSION 3.8 FATAL_ERROR)
 
 # Initialize for C++ and CUDA languages
 set(CXX_FLAGS "-Wall")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CUDA_COMPILER /usr/local/cuda/bin/nvcc)
 
 project(kinfu_imp LANGUAGES CXX CUDA)
 
 find_package(OpenCV 4.1 REQUIRED)
-find_package(PCL 1.2 REQUIRED)
+find_package(PCL 1.7 REQUIRED)
 
 include_directories(${OpenCV_INCLUDE_DIRS})
 include_directories(${PCL_INCLUDE_DIRS})
