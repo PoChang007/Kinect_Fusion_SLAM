@@ -1,3 +1,4 @@
+#include "parallel_processing/parallel_processing.h"
 #include "kinfu_pipeline.h"
 
 namespace Kinfu

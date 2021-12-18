@@ -8,6 +8,8 @@
 
 namespace Kinfu
 {
+    class KinfuPipeline;
+
     class SystemUtility
     {
     public:

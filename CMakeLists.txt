@@ -38,12 +38,8 @@ if(CUDA_FOUND)
     CUDA_ADD_EXECUTABLE(kinfu_imp
     src/system_interface.cpp
     src/kinfu_pipeline.cpp
-    src/kinfu_pipeline.h
     src/system_utility.cpp
-    src/system_utility.h
     src/threeD_viewer.cpp
-    src/threeD_viewer.h
-    src/parallel_processing/parallel_processing.h
     src/parallel_processing/projective_tsdf.cu
     src/parallel_processing/voxel_traversal.cu
     src/parallel_processing/raw_vertices.cu

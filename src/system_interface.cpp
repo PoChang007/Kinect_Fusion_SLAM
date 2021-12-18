@@ -1,5 +1,4 @@
 #include "kinfu_pipeline.h"
-#include "threeD_viewer.h"
 
 int main()
 {
@@ -20,7 +19,7 @@ int main()
     bool firstFrameRender = false;
 
     std::shared_ptr<Kinfu::KinfuPipeline> kinectFusionSystem = std::make_shared<Kinfu::KinfuPipeline>(height, width, max_depth, min_depth);
-    std::unique_ptr<ThreeDViewer> pclRender = std::make_unique<ThreeDViewer>(height, width, kinectFusionSystem->get_shared_this());
+    std::unique_ptr<Kinfu::ThreeDViewer> pclRender = std::make_unique<Kinfu::ThreeDViewer>(height, width, kinectFusionSystem->get_shared_this());
 
     pcl::visualization::PCLVisualizer::Ptr viewer(new pcl::visualization::PCLVisualizer("3D Viewer"));
     viewer->setBackgroundColor(0, 0, 0);
